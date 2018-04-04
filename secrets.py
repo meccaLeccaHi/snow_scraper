@@ -1,3 +1,0 @@
-yelp_api_key = 'WMvQ8ZwboVVJ8Hdd1w_m9hklNaW01vxyI1SiNijHmoYpX2Dg1KqzymH_YB-EwhWDsl3Y3kSYeVUvh7WcaUrR-EpvjuImXAgioaG0XHEkLukCzN3YEOrnDaRGpxiwWnYx'
-
-google_places_key = 'AIzaSyDXxFCjiWLU_6BRETgHQ5MhV2p6II556JI'
