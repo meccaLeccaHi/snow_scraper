@@ -2,3 +2,5 @@ secrets.py
 __*__
 *.pdf
 *.pages
+skiresortinfo.py
+cache-skiresortinfo.json
