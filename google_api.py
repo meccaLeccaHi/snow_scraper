@@ -37,9 +37,11 @@ def get_lat_and_long(ski_name, ski_state):
 		information = geocoding_results['results'][0]
 		lattitude = information['geometry']['location']['lat']
 		longitude = information['geometry']['location']['lng']
+		return(lattitude, longitude)
 	else:
 		print('Error')
+		return('Error', 'Error')
 
-	return(lattitude, longitude)
+
 
 # print(get_lat_and_long('Beaver Creek', 'Colorado'))

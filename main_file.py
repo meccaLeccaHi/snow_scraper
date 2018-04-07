@@ -17,11 +17,6 @@ def init_db():
     '''
     cur.execute(statement)
     conn.commit()
-    # statement = '''
-    #     DROP TABLE IF EXISTS 'Mountain_SkiResortInfo';
-    # '''
-    # cur.execute(statement)
-    # conn.commit()
     statement = '''
         DROP TABLE IF EXISTS 'Yelp';
     '''
@@ -55,18 +50,6 @@ def init_db():
         );
     '''
     cur.execute(statement)
-
-    # statement = '''
-    #     CREATE TABLE 'Mountain_SkiResortInfo' (
-    #         'Name' TEXT NOT NULL,
-    #         'State' TEXT NOT NULL,
-    #         'Easy' TEXT NOT NULL,
-    #         'Intermediate' TEXT NOT NULL,
-    #         'Difficult' TEXT NOT NULL
-    #     );
-    # '''
-    # cur.execute(statement)
-    # conn.commit()
 
     statement = '''
         CREATE TABLE 'Yelp' (
@@ -142,26 +125,9 @@ def insert_data():
         statement += 'VALUES (?, ?, ?)'
         cur.execute(statement, insertion)
         conn.commit()
-        # print('yelp {}'.format(count))
         count +=1
     conn.commit()
 
-    # skiresortinfo_data = skiresortinfo.main()
-    # count = 0
-    # for c in skiresortinfo_data.items():
-    #     count+=1
-    #     name = c[0]
-    #     state = c[1][0]
-    #     easy = c[1][1][0].split('Easy')[1].strip()
-    #     intermediate = c[1][1][1].split('Intermediate')[1].strip()
-    #     difficult = c[1][1][2].split('Difficult')[1].strip()
-    #     insertion = (name, state, easy, intermediate, difficult)
-    #     statement = 'INSERT INTO "Mountain_SkiResortInfo" '
-    #     statement += 'VALUES (?, ?, ?, ?, ?)'
-    #     cur.execute(statement, insertion)
-    #     print('info {}'.format(count))
-    #
-    # conn.commit()
     conn.close()
 
 if __name__ == "__main__":

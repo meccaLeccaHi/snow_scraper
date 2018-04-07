@@ -4,3 +4,6 @@ __*__
 *.pages
 skiresortinfo.py
 cache-skiresortinfo.json
+Checkpoint
+worldplot.py
+state-provinces-plot.py
