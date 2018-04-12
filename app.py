@@ -5,15 +5,7 @@ import dash_html_components as html
 import plotly.plotly as py
 from plotly.graph_objs import *
 import sqlite3
-
-conn = sqlite3.connect('snowfall.db')
-cur = conn.cursor()
-
-statement = 'SELECT * FROM Mountain_Locations JOIN Mountain_Snow ON'
-statement+= " Mountain_Locations.Name=Mountain_Snow.MountainName AND"
-statement+= " Mountain_Locations.State=Mountain_Snow.State "
-statement+= 'JOIN Yelp ON Mountain_Locations.Name=Yelp.Name AND'
-statement+= " Mountain_Locations.State=Yelp.State"
+from flask import Flask, render_template
 
 class Text:
     def __init__(self, name, total, state, rating):
@@ -45,6 +37,15 @@ class Rating:
             rating = 'No Rating'
         return rating
 
+conn = sqlite3.connect('snowfall.db')
+cur = conn.cursor()
+
+statement = 'SELECT * FROM Mountain_Locations JOIN Mountain_Snow ON'
+statement+= " Mountain_Locations.Name=Mountain_Snow.MountainName AND"
+statement+= " Mountain_Locations.State=Mountain_Snow.State "
+statement+= 'JOIN Yelp ON Mountain_Locations.Name=Yelp.Name AND'
+statement+= " Mountain_Locations.State=Yelp.State"
+
 
 data_list = []
 cur.execute(statement)
@@ -65,11 +66,35 @@ for c in data_list:
 
 title = '<b>Predicted Snowfall for the Next 5 Days</b><br>'
 title += 'Source: <a href="https://opensnow.com/">Open Snow</a></br>'
-title += 'Ratings From: <a href="https://www.yelp.com/">Yelp</a>'
+title += 'Ratings From: <a href="https://www.yelp.com/">Yelp</a></br>'
 
-app = dash.Dash()
 
-app.layout = html.Div(children=[
+colors = {
+'background': 'rgb(236,236,236)',
+'water': "rgba(0, 0, 255, .20)",
+'black': 'rgb(0,0,0)',
+'line_color': 'rgba(102, 102, 102)',
+'land': "rgb(212, 212, 212)",
+'white': 'rgb(255,255,255)'
+}
+
+server = Flask(__name__)
+
+# title += '<a href="/about">About This Project</a>'
+@server.route('/about')
+def about():
+    html = '''
+      <h1>This is my SI 206 Final Project</h1>
+      <p> This is my first ever Flask website! </p>
+      <a href='/'> Go back home </a>
+      '''
+    return html
+    # return render_template('about.html')
+
+
+app = dash.Dash(server=server, url_base_pathname='/')
+
+app.layout = html.Div(style={'backgroundColor': colors['background']},children=[
     html.H1(
         children='SI 206 Final',
         style={
@@ -107,32 +132,45 @@ app.layout = html.Div(children=[
                     'autocolorscale': False,
                     'line': {
                         'width': 1,
-                        'color': 'rgba(102, 102, 102)'
+                        'color': colors['line_color']
                         },
                     'colorscale': 'Jet',
                     'color': [x[17] for x in data_list],
                     'colorbar': {
-                        'title': "Inches of Snow Forecasted",
-                        'len': .5
+                        'title': "Inches of Snow<br>Forecasted",
+                        'titlefont':{
+                            'family': 'Lato',
+                            'color': colors['black']
+                            },
+                        'len': .5,
+                        'xpad': 40,
+                        'ticksuffix': ' in.'
                         }
                     }
                 }
             ],
             'layout': {
+                'plot_bgcolor': colors['background'],
+                'paper_bgcolor': colors['background'],
                 'title': title,
                 'titlefont': {
                     'family': 'Lato',
                     'size': '18',
-                    'color': 'rgb(0,0,0)'
+                    'color': colors['black']
+                    },
+                'margin': {
+                    't':150
                     },
                 'geo': {
                     'scope': 'north america',
                     'showland': True,
-                    'landcolor': "rgb(212, 212, 212)",
-                    'subunitcolor': "rgb(255, 255, 255)",
-                    'countrycolor': "rgb(255, 255, 255)",
+                    'landcolor': colors['land'],
+                    'subunitcolor': colors['white'],
+                    'countrycolor': colors['white'],
                     'showlakes': True,
-                    'lakecolor': "rgba(0, 0, 255, .35)",
+                    'lakecolor': colors['water'],
+                    'showocean': True,
+                    'oceancolor': colors['water'],
                     'showsubunits': True,
                     'showcountries': True,
                     'resolution': 50,
@@ -145,13 +183,13 @@ app.layout = html.Div(children=[
                     'lonaxis': {
                         'showgrid': True,
                         'gridwidth': 0.5,
-                        'range': [ -135.0, -60.0 ],
+                        'range': [ -135.0, -65.0 ],
                         'dtick': 5
                         },
                     'lataxis':{
                         'showgrid': True,
                         'gridwidth': 0.5,
-                        'range': [ 28.0, 68.0 ],
+                        'range': [ 30.0, 68.0 ],
                         'dtick': 5
                         }
                     }
@@ -166,6 +204,13 @@ app.layout = html.Div(children=[
             'font-size': '4em',
         }
     ),
+    html.H1(
+        children='Choose a Different Area',
+        style={
+            'margin-left': '60px',
+            'font-family': 'Lato',
+            'font-size': '2em',
+            }),
     html.Div([
             dcc.Dropdown(
                 id='state-value',
@@ -174,21 +219,23 @@ app.layout = html.Div(children=[
             )
         ],
         style={'width': '20%', 'display': 'inline-block', 'font-family': 'Lato',
-                'font-size': '1.75em'}),
+                'font-size': '1.75em', 'margin-left': '50px'
+                }),
 
     dcc.Graph(
         id='indicator-graphic',
-        style={'height': '600'}
-        ),
-    html.Div([
-        html.P('\n \n ')
-    ])
+        style={'height': '600', 'margin-left': '20px', 'margin-right': '20px',
+            'margin-bottom':'50px'}
+        )
 ])
-external_css = ["https://fonts.googleapis.com/css?family=Lato",
-                "https://cdn.rawgit.com/plotly/dash-app-stylesheets/2cc54b8c03f4126569a3440aae611bbef1d7a5dd/stylesheet.css"]
+
+long_css_url = 'https://cdn.rawgit.com/plotly/dash-app-stylesheets/2cc54b8c03f'
+long_css_url += '4126569a3440aae611bbef1d7a5dd/stylesheet.css'
+external_css = ["https://fonts.googleapis.com/css?family=Lato",long_css_url]
 
 for css in external_css:
     app.css.append_css({"external_url": css})
+
 
 @app.callback(
     dash.dependencies.Output('indicator-graphic', 'figure'),
@@ -218,11 +265,13 @@ def update_graph(state_or_province):
     return {
     'data': [trace1],
     'layout': Layout(
+        plot_bgcolor= colors['background'],
+        paper_bgcolor= colors['background'],
         title= '5 Day Forecasted Snow for '+state_or_province+'',
         titlefont = dict(
             family= 'Lato',
             size= 30,
-            color='rgb(0,0,0)'
+            color= colors['black']
             ),
         barmode='group',
         yaxis= dict(
@@ -230,7 +279,7 @@ def update_graph(state_or_province):
             titlefont = dict(
                 family= 'Lato',
                 size= 20,
-                color='rgb(0,0,0)'
+                color= colors['black']
                 ),
             automargin=True,
             rangemode= 'nonnegative'
@@ -252,6 +301,8 @@ def update_graph(state_or_province):
         bargap= .35
         )
     }
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
