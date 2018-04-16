@@ -80,16 +80,10 @@ colors = {
 
 server = Flask(__name__)
 
-# title += '<a href="/about">About This Project</a>'
+title += '<a href="/about">About This Project</a>'
 @server.route('/about')
 def about():
-    html = '''
-      <h1>This is my SI 206 Final Project</h1>
-      <p> This is my first ever Flask website! </p>
-      <a href='/'> Go back home </a>
-      '''
-    return html
-    # return render_template('about.html')
+    return render_template('about.html')
 
 
 app = dash.Dash(server=server, url_base_pathname='/')
