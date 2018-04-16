@@ -80,7 +80,7 @@ colors = {
 
 server = Flask(__name__)
 
-title += '<a href="/about">About This Project</a>'
+title += "<a href='/about' target='_self'>About This Project</a>"
 @server.route('/about')
 def about():
     return render_template('about.html')
