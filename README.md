@@ -1,5 +1,5 @@
 # SI 206 Final Project- Cooper Seligson
-## View My Project Online at 
+## View My Project Online at:
 https://si206-final.herokuapp.com/
 ## To Run my Project:
 Install 
