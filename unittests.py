@@ -34,7 +34,7 @@ class TestDatabase(unittest.TestCase):
         result_list = results.fetchall()
         self.assertEqual(len(result_list), 30)
         for c in result_list:
-            if c[1] != 'Colorado':
+            if c[2] != 'Colorado':
                 colorado_test = False
             else:
                 colorado_test = True
@@ -55,15 +55,15 @@ class TestDatabase(unittest.TestCase):
         results = cur.execute(sql)
         result_list = results.fetchall()
         self.assertEqual(len(result_list), 1)
-        self.assertEqual(result_list[0][2], 39.604225)
-        self.assertEqual(result_list[0][3], -106.516515)
+        self.assertEqual(result_list[0][3], 39.604225)
+        self.assertEqual(result_list[0][4], -106.516515)
 
         sql = 'SELECT * FROM Mountain_Locations WHERE State="California"'
         results = cur.execute(sql)
         result_list = results.fetchall()
         self.assertEqual(len(result_list), 25)
         for c in result_list:
-            if c[1] != 'California':
+            if c[2] != 'California':
                 california_test = False
             else:
                 california_test = True
@@ -81,9 +81,9 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(len(result_list), 604)
 
         for c in result_list:
-            if c[2] == 'No Rating':
+            if c[3] == 'No Rating':
                  rating_test = True
-            elif float(c[2]) >= 0 and float(c[2]) <= 5.0:
+            elif float(c[3]) >= 0 and float(c[3]) <= 5.0:
                 rating_test = True
             else:
                 rating_test = False
