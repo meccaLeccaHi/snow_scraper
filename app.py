@@ -40,12 +40,10 @@ class Rating:
 conn = sqlite3.connect('snowfall.db')
 cur = conn.cursor()
 
-statement = 'SELECT * FROM Mountain_Locations JOIN Mountain_Snow ON'
-statement+= " Mountain_Locations.Name=Mountain_Snow.MountainName AND"
-statement+= " Mountain_Locations.State=Mountain_Snow.State "
-statement+= 'JOIN Yelp ON Mountain_Locations.Name=Yelp.Name AND'
-statement+= " Mountain_Locations.State=Yelp.State"
-
+statement = 'SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Latitude, '
+statement+= 'Longitude, TOTAL, Yelp.Rating FROM Mountain_Locations '
+statement+= "JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id "
+statement+= 'JOIN Yelp ON Mountain_Locations.Id=Yelp.Id'
 
 data_list = []
 cur.execute(statement)
@@ -56,8 +54,8 @@ stateANDProvince = []
 text_list = []
 for c in data_list:
     name = c[0]
-    total  = c[17]
-    rating_class = Rating(c[20])
+    total  = c[4]
+    rating_class = Rating(c[5])
     rating = rating_class.rating_unicode()
     text = str(Text(name, total, c[1], rating))
     text_list.append(text)
@@ -120,7 +118,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'margin-bo
                 'hoverinfo': "text",
                 'mode': 'markers',
                 'marker': {
-                    'size': [x[17] if float(x[17])>5 else 5 for x in data_list],
+                    'size': [x[4] if float(x[4])>5 else 5 for x in data_list],
                     'opacity': 0.8,
                     'reversescale': True,
                     'autocolorscale': False,
@@ -129,7 +127,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'margin-bo
                         'color': colors['line_color']
                         },
                     'colorscale': 'Jet',
-                    'color': [x[17] for x in data_list],
+                    'color': [x[4] for x in data_list],
                     'colorbar': {
                         'title': "Inches of Snow<br>Forecasted",
                         'titlefont':{
@@ -250,12 +248,11 @@ def update_graph(state_or_province):
     conn = sqlite3.connect('snowfall.db')
     cur = conn.cursor()
 
-    statement = 'SELECT * FROM Mountain_Locations JOIN Mountain_Snow ON'
-    statement+= " Mountain_Locations.Name=Mountain_Snow.MountainName AND"
-    statement+= " Mountain_Locations.State=Mountain_Snow.State "
-    statement+= 'JOIN Yelp ON Mountain_Locations.Name=Yelp.Name AND'
-    statement+= " Mountain_Locations.State=Yelp.State "
-    statement+= 'WHERE Mountain_Snow.State="'+state_or_province+'" '
+    statement='SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Latitude,'
+    statement+=' Longitude, TOTAL, Yelp.Rating FROM Mountain_Locations '
+    statement+="JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id "
+    statement+='JOIN Yelp ON Mountain_Locations.Id=Yelp.Id '
+    statement+='WHERE Mountain_Snow.State="'+state_or_province+'" '
 
     cur.execute(statement)
     snow_data = []
@@ -265,7 +262,7 @@ def update_graph(state_or_province):
 
     trace1 = Bar(
         x=[x[0] for x in snow_data],
-        y=[x[17] for x in snow_data]
+        y=[x[4] for x in snow_data]
         )
     return {
     'data': [trace1],
@@ -314,12 +311,12 @@ def update_graph1(limit):
     conn = sqlite3.connect('snowfall.db')
     cur = conn.cursor()
 
-    statement = 'SELECT * FROM Mountain_Locations JOIN Mountain_Snow ON'
-    statement+= " Mountain_Locations.Name=Mountain_Snow.MountainName AND"
-    statement+= " Mountain_Locations.State=Mountain_Snow.State "
-    statement+= 'JOIN Yelp ON Mountain_Locations.Name=Yelp.Name AND'
-    statement+= " Mountain_Locations.State=Yelp.State ORDER BY TOTAL "
-    statement+= 'DESC LIMIT "'+str(limit)+'" '
+    statement='SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Latitude,'
+    statement+=' Longitude, TOTAL, Yelp.Rating FROM Mountain_Locations '
+    statement+="JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id "
+    statement+='JOIN Yelp ON Mountain_Locations.Id=Yelp.Id '
+    statement+= 'ORDER BY TOTAL DESC LIMIT "'+str(limit)+'" '
+
     cur.execute(statement)
     snow_data = []
     for row in cur:
@@ -328,7 +325,7 @@ def update_graph1(limit):
 
     trace1 = Bar(
         x=[x[0] for x in snow_data],
-        y=[x[17] for x in snow_data]
+        y=[x[4] for x in snow_data]
         )
     return {
     'data': [trace1],

@@ -24,6 +24,7 @@ def init_db():
     conn.commit()
     statement = '''
         CREATE TABLE 'Mountain_Snow' (
+            'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
             'MountainName' TEXT NOT NULL,
             'State' TEXT NOT NULL,
             'URL' TEXT NOT NULL,
@@ -43,6 +44,7 @@ def init_db():
     cur.execute(statement)
     statement = '''
         CREATE TABLE 'Mountain_Locations' (
+            'Id' INTEGER,
             'Name' TEXT NOT NULL,
             'State' TEXT NOT NULL,
             'Latitude' INTEGER NOT NULL,
@@ -53,6 +55,7 @@ def init_db():
 
     statement = '''
         CREATE TABLE 'Yelp' (
+            'Id' INTEGER,
             'Name' TEXT NOT NULL,
             'State' TEXT NOT NULL,
             'Rating' TEXT NOT NULL
@@ -96,10 +99,10 @@ def insert_data():
             total = avg_snow(d1m)+avg_snow(d1n)+avg_snow(d2m)+avg_snow(d2n)
             total += avg_snow(d3m)+avg_snow(d3n)+avg_snow(d4m)+avg_snow(d4n)
             total += avg_snow(d5m)+avg_snow(d5n)
-            insertion = (name, state_name, url, d1m, d1n, d2m,
+            insertion = (None, name, state_name, url, d1m, d1n, d2m,
                          d2n, d3m, d3n, d4m, d4n, d5m, d5n, total)
             statement = 'INSERT INTO "Mountain_Snow" '
-            statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             cur.execute(statement, insertion)
     conn.commit()
     google_data_list = []
@@ -110,9 +113,9 @@ def insert_data():
             google_location_info = google_api.get_lat_and_long(name, state_name)
             lat = google_location_info[0]
             long = google_location_info[1]
-            insertion = (name, state_name, lat, long)
+            insertion = (None, name, state_name, lat, long)
             statement = 'INSERT INTO "Mountain_Locations" '
-            statement += 'VALUES (?, ?, ?, ?)'
+            statement += 'VALUES (?, ?, ?, ?, ?)'
             cur.execute(statement, insertion)
             google_data_list.append((name, lat, long, state_name))
     conn.commit()
@@ -120,12 +123,36 @@ def insert_data():
     count = 1
     for c in google_data_list:
         yelp_data = yelp.yelp_individual_request(c[0], c[1], c[2])
-        insertion = (c[0], c[3], yelp_data[1])
+        insertion = (None, c[0], c[3], yelp_data[1])
         statement = 'INSERT INTO "Yelp" '
-        statement += 'VALUES (?, ?, ?)'
+        statement += 'VALUES (?, ?, ?, ?)'
         cur.execute(statement, insertion)
         conn.commit()
         count +=1
+    conn.commit()
+
+    statement = '''
+    UPDATE Mountain_Locations
+    SET Id = (SELECT Id FROM Mountain_Snow
+                            WHERE MountainName = Mountain_Locations.Name AND State=
+                            Mountain_Locations.State)
+    WHERE EXISTS (SELECT Id
+                  FROM Mountain_Snow
+                  WHERE Name = Mountain_Locations.Name AND State=
+                  Mountain_Locations.State)
+    '''
+    cur.execute(statement)
+    conn.commit()
+
+    statement = '''
+    UPDATE Yelp
+    SET Id = (SELECT Id FROM Mountain_Snow
+                            WHERE MountainName=Yelp.Name AND State=Yelp.State)
+    WHERE EXISTS (SELECT Id
+                  FROM Mountain_Snow
+                  WHERE MountainName=Yelp.Name AND State=Yelp.State)
+    '''
+    cur.execute(statement)
     conn.commit()
 
     conn.close()
