@@ -322,7 +322,8 @@ def update_graph1(limit):
     for row in cur:
         snow_data.append(row)
     conn.close()
-
+    title = ''+str(limit)+' Mountains with the Most Predicted Snowfall<br>'
+    title += '(Use slider below to change #)'
     trace1 = Bar(
         x=[x[0] for x in snow_data],
         y=[x[4] for x in snow_data]
@@ -332,7 +333,7 @@ def update_graph1(limit):
     'layout': Layout(
         plot_bgcolor= colors['background'],
         paper_bgcolor= colors['background'],
-        title= ''+str(limit)+' Mountains with the Most Predicted Snowfall',
+        title= title,
         titlefont = dict(
             family= 'Lato',
             size= 30,
