@@ -65,7 +65,7 @@ for c in data_list:
 title = '<b>Predicted Snowfall for the Next 5 Days</b><br>'
 title += 'Source: <a href="https://opensnow.com/">Open Snow</a></br>'
 title += 'Ratings From: <a href="https://www.yelp.com/">Yelp</a></br>'
-
+title += "<a href='/about' target='_self'>About This Project</a>"
 
 colors = {
 'background': 'rgb(236,236,236)',
@@ -76,161 +76,183 @@ colors = {
 'white': 'rgb(255,255,255)'
 }
 
+slider_style = {'color': colors['black'], 'font-size': '1.5em',
+                'font-family': 'Lato',}
+
 server = Flask(__name__)
 
-title += "<a href='/about' target='_self'>About This Project</a>"
 @server.route('/about')
 def about():
     return render_template('about.html')
 
-
 app = dash.Dash(server=server, url_base_pathname='/')
 
-app.layout = html.Div(style={'backgroundColor': colors['background'], 'margin-bottom': '0px'},children=[
-    html.H1(
-        children='SI 206 Final',
-        style={
-            'textAlign': 'center',
-            'font-family': 'Lato',
-            'font-size': '4em',
-        }
-    ),
-    html.H3(
-        children='Cooper Seligson',
-        style={
-            'textAlign': 'center',
-            'font-family': 'Lato',
-            'font-size': '2.5em',
-        }
-    ),
-    dcc.Graph(
-        id='graph-1',
-        style={
-            'height': '1050'
-            },
-        figure={
-            'data': [
-                {'type': 'scattergeo',
-                'text': [x for x in text_list],
-                'locationmode':'USA-states',
-                'lon': [x[3] for x in data_list],
-                'lat': [x[2] for x in data_list],
-                'hoverinfo': "text",
-                'mode': 'markers',
-                'marker': {
-                    'size': [x[4] if float(x[4])>5 else 5 for x in data_list],
-                    'opacity': 0.8,
-                    'reversescale': True,
-                    'autocolorscale': False,
-                    'line': {
-                        'width': 1,
-                        'color': colors['line_color']
-                        },
-                    'colorscale': 'Jet',
-                    'color': [x[4] for x in data_list],
-                    'colorbar': {
-                        'title': "Inches of Snow<br>Forecasted",
-                        'titlefont':{
-                            'family': 'Lato',
-                            'color': colors['black']
-                            },
-                        'len': .5,
-                        'xpad': 40,
-                        'ticksuffix': ' in.'
-                        }
-                    }
-                }
-            ],
-            'layout': {
-                'plot_bgcolor': colors['background'],
-                'paper_bgcolor': colors['background'],
-                'title': title,
-                'titlefont': {
-                    'family': 'Lato',
-                    'size': '18',
-                    'color': colors['black']
-                    },
-                'margin': {
-                    't':150
-                    },
-                'geo': {
-                    'scope': 'north america',
-                    'showland': True,
-                    'landcolor': colors['land'],
-                    'subunitcolor': colors['white'],
-                    'countrycolor': colors['white'],
-                    'showlakes': True,
-                    'lakecolor': colors['water'],
-                    'showocean': True,
-                    'oceancolor': colors['water'],
-                    'showsubunits': True,
-                    'showcountries': True,
-                    'resolution': 50,
-                    'projection': {
-                        'type': 'conic conformal',
-                        'rotation': {
-                            'lon': -100
-                            }
-                        },
-                    'lonaxis': {
-                        'showgrid': True,
-                        'gridwidth': 0.5,
-                        'range': [ -135.0, -65.0 ],
-                        'dtick': 5
-                        },
-                    'lataxis':{
-                        'showgrid': True,
-                        'gridwidth': 0.5,
-                        'range': [ 30.0, 68.0 ],
-                        'dtick': 5
-                        }
-                    }
-                }
+app.layout = html.Div(
+    style={'backgroundColor': colors['background'], 'margin-bottom': '0px',
+            'margin-top': '0px'},
+    children=[
+        html.H1(
+            children='SI 206 Final',
+            style={
+                'textAlign': 'center',
+                'font-family': 'Lato',
+                'font-size': '4em',
             }
-    ),
-    html.H1(
-        children='Individual States and Provinces',
-        style={
-            'textAlign': 'center',
-            'font-family': 'Lato',
-            'font-size': '4em',
-        }
-    ),
-    html.H1(
-        children='Choose a Different Area',
-        style={
-            'margin-left': '60px',
-            'font-family': 'Lato',
-            'font-size': '2em',
-            }),
-    html.Div([
-        dcc.Dropdown(
-            id='state-value',
-            options=[{'label': i, 'value': i} for i in stateANDProvince],
-            value='Colorado'
-            )
-        ],
-        style={'width': '20%', 'display': 'inline-block', 'font-family': 'Lato',
-                'font-size': '1.75em', 'margin-left': '50px'
-                }),
-
-    dcc.Graph(
-        id='indicator-graphic1',
-        style={'height': '600', 'margin-left': '20px', 'margin-right': '20px',
-            'margin-bottom':'50px'}
         ),
-    dcc.Graph(id='graph-with-slider'),
-    html.Div([
-        dcc.Slider(
-            id='value-slider',
-            min=1,
-            max=30,
-            value=15,
-            marks={1:'1',5:'5',10:'10',15:'15',20:'20',25:'25',30:'30'},
+        html.H3(
+            children='Cooper Seligson',
+            style={
+                'textAlign': 'center',
+                'font-family': 'Lato',
+                'font-size': '2.5em',
+            }
+        ),
+        dcc.Graph(
+            id='graph-1',
+            style={
+                'height': '1050'
+                },
+            figure={
+                'data': [
+                    {'type': 'scattergeo',
+                    'text': [x for x in text_list],
+                    'locationmode':'USA-states',
+                    'lon': [x[3] for x in data_list],
+                    'lat': [x[2] for x in data_list],
+                    'hoverinfo': "text",
+                    'mode': 'markers',
+                    'marker': {
+                        'size':[x[4] if float(x[4])>5 else 5 for x in data_list],
+                        'opacity': 0.8,
+                        'reversescale': True,
+                        'autocolorscale': False,
+                        'line': {
+                            'width': 1,
+                            'color': colors['line_color']
+                            },
+                        'colorscale': 'Jet',
+                        'color': [x[4] for x in data_list],
+                        'colorbar': {
+                            'title': "Inches of Snow<br>Forecasted",
+                            'titlefont':{
+                                'family': 'Lato',
+                                'color': colors['black']
+                                },
+                            'len': .5,
+                            'xpad': 40,
+                            'ticksuffix': ' in.'
+                            }
+                        }
+                    }
+                ],
+                'layout': {
+                    'plot_bgcolor': colors['background'],
+                    'paper_bgcolor': colors['background'],
+                    'title': title,
+                    'titlefont': {
+                        'family': 'Lato',
+                        'size': '18',
+                        'color': colors['black']
+                        },
+                    'margin': {
+                        't':150
+                        },
+                    'geo': {
+                        'scope': 'north america',
+                        'showland': True,
+                        'landcolor': colors['land'],
+                        'subunitcolor': colors['white'],
+                        'countrycolor': colors['white'],
+                        'showlakes': True,
+                        'lakecolor': colors['water'],
+                        'showocean': True,
+                        'oceancolor': colors['water'],
+                        'showsubunits': True,
+                        'showcountries': True,
+                        'resolution': 50,
+                        'projection': {
+                            'type': 'conic conformal',
+                            'rotation': {
+                                'lon': -100
+                                }
+                            },
+                        'lonaxis': {
+                            'showgrid': True,
+                            'gridwidth': 0.5,
+                            'range': [ -135.0, -65.0 ],
+                            'dtick': 5
+                            },
+                        'lataxis':{
+                            'showgrid': True,
+                            'gridwidth': 0.5,
+                            'range': [ 30.0, 68.0 ],
+                            'dtick': 5
+                            }
+                        }
+                    }
+                }
+        ),
+        html.H1(
+            children='Individual States and Provinces',
+            style={
+                'textAlign': 'center',
+                'font-family': 'Lato',
+                'font-size': '4em',
+            }
+        ),
+        html.H1(
+            children='Choose a Different State',
+            style={
+                'margin-left': '60px',
+                'font-family': 'Lato',
+                'font-size': '2em',
+                }),
+        html.Div([
+            dcc.Dropdown(
+                id='state-value',
+                options=[{'label': i, 'value': i} for i in stateANDProvince],
+                value='Colorado'
+                )
+            ],
+            style={'width': '20%','display':'inline-block','font-family':'Lato',
+                    'font-size': '1.75em', 'margin-left': '50px'
+                    }),
+
+        dcc.Graph(
+            id='indicator-graphic1',
+            style={'height': '600', 'margin-left': '4%', 'margin-right': '4%',
+                'margin-bottom':'50px'}
+            ),
+        dcc.Graph(
+            id='graph-with-slider',
+            style={'height': '600', 'margin-left': '4%', 'margin-right': '4%',
+                'margin-bottom':'50px'}
+            ),
+        html.Div([
+            dcc.Slider(
+                id='value-slider',
+                min=10,
+                max=100,
+                value=50,
+                marks= {
+                        10:{'label': '10', 'style': slider_style},
+                        20:{'label': '20', 'style': slider_style},
+                        30:{'label': '30', 'style': slider_style},
+                        40:{'label': '40', 'style': slider_style},
+                        50:{'label': '50', 'style': slider_style},
+                        60:{'label': '60', 'style': slider_style},
+                        70:{'label': '70', 'style': slider_style},
+                        80:{'label': '80', 'style': slider_style},
+                        90:{'label': '90', 'style': slider_style},
+                        100:{'label': '100', 'style': slider_style}
+                        },
+                updatemode='drag'
+                )
+            ],
+            style={'display': 'inline-block','margin': 'auto', 'width': '30%',
+                'margin-bottom':'150px','margin-left': '35%',
+                'margin-right':'35%'}
             )
-        ],
-        style={'margin': '0 auto', 'width': '400px', 'margin-bottom': '50px'}
-        )
     ])
 
 long_css_url = 'https://cdn.rawgit.com/plotly/dash-app-stylesheets/2cc54b8c03f'
@@ -248,9 +270,9 @@ def update_graph(state_or_province):
     conn = sqlite3.connect('snowfall.db')
     cur = conn.cursor()
 
-    statement='SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Latitude,'
-    statement+=' Longitude, TOTAL, Yelp.Rating FROM Mountain_Locations '
-    statement+="JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id "
+    statement='SELECT Mountain_Snow.MountainName, Mountain_Snow.State, '
+    statement+='Latitude, Longitude, TOTAL, Yelp.Rating FROM Mountain_Locations'
+    statement+=" JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id "
     statement+='JOIN Yelp ON Mountain_Locations.Id=Yelp.Id '
     statement+='WHERE Mountain_Snow.State="'+state_or_province+'" '
 
@@ -298,7 +320,7 @@ def update_graph(state_or_province):
         margin= Margin(
             l=75,
             r=75,
-            b=150
+            b=180
         ),
         bargap= .35
         )
@@ -311,9 +333,9 @@ def update_graph1(limit):
     conn = sqlite3.connect('snowfall.db')
     cur = conn.cursor()
 
-    statement='SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Latitude,'
-    statement+=' Longitude, TOTAL, Yelp.Rating FROM Mountain_Locations '
-    statement+="JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id "
+    statement='SELECT Mountain_Snow.MountainName, Mountain_Snow.State, '
+    statement+='Latitude, Longitude, TOTAL, Yelp.Rating FROM Mountain_Locations'
+    statement+=" JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id "
     statement+='JOIN Yelp ON Mountain_Locations.Id=Yelp.Id '
     statement+= 'ORDER BY TOTAL DESC LIMIT "'+str(limit)+'" '
 
@@ -362,7 +384,7 @@ def update_graph1(limit):
         margin= Margin(
             l=75,
             r=75,
-            b=150
+            b=180
         ),
         bargap= .35
         )
