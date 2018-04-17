@@ -88,7 +88,7 @@ def about():
 
 app = dash.Dash(server=server, url_base_pathname='/')
 
-app.layout = html.Div(style={'backgroundColor': colors['background']},children=[
+app.layout = html.Div(style={'backgroundColor': colors['background'], 'margin-bottom': '0px'},children=[
     html.H1(
         children='SI 206 Final',
         style={
@@ -206,10 +206,10 @@ app.layout = html.Div(style={'backgroundColor': colors['background']},children=[
             'font-size': '2em',
             }),
     html.Div([
-            dcc.Dropdown(
-                id='state-value',
-                options=[{'label': i, 'value': i} for i in stateANDProvince],
-                value='Colorado'
+        dcc.Dropdown(
+            id='state-value',
+            options=[{'label': i, 'value': i} for i in stateANDProvince],
+            value='Colorado'
             )
         ],
         style={'width': '20%', 'display': 'inline-block', 'font-family': 'Lato',
@@ -217,11 +217,23 @@ app.layout = html.Div(style={'backgroundColor': colors['background']},children=[
                 }),
 
     dcc.Graph(
-        id='indicator-graphic',
+        id='indicator-graphic1',
         style={'height': '600', 'margin-left': '20px', 'margin-right': '20px',
             'margin-bottom':'50px'}
+        ),
+    dcc.Graph(id='graph-with-slider'),
+    html.Div([
+        dcc.Slider(
+            id='value-slider',
+            min=1,
+            max=30,
+            value=15,
+            marks={1:'1',5:'5',10:'10',15:'15',20:'20',25:'25',30:'30'},
+            )
+        ],
+        style={'margin': '0 auto', 'width': '400px', 'margin-bottom': '50px'}
         )
-])
+    ])
 
 long_css_url = 'https://cdn.rawgit.com/plotly/dash-app-stylesheets/2cc54b8c03f'
 long_css_url += '4126569a3440aae611bbef1d7a5dd/stylesheet.css'
@@ -230,9 +242,8 @@ external_css = ["https://fonts.googleapis.com/css?family=Lato",long_css_url]
 for css in external_css:
     app.css.append_css({"external_url": css})
 
-
 @app.callback(
-    dash.dependencies.Output('indicator-graphic', 'figure'),
+    dash.dependencies.Output('indicator-graphic1', 'figure'),
     [dash.dependencies.Input('state-value', 'value')])
 
 def update_graph(state_or_province):
@@ -295,8 +306,69 @@ def update_graph(state_or_province):
         bargap= .35
         )
     }
+@app.callback(
+    dash.dependencies.Output('graph-with-slider', 'figure'),
+    [dash.dependencies.Input('value-slider', 'value')])
 
+def update_graph1(limit):
+    conn = sqlite3.connect('snowfall.db')
+    cur = conn.cursor()
 
+    statement = 'SELECT * FROM Mountain_Locations JOIN Mountain_Snow ON'
+    statement+= " Mountain_Locations.Name=Mountain_Snow.MountainName AND"
+    statement+= " Mountain_Locations.State=Mountain_Snow.State "
+    statement+= 'JOIN Yelp ON Mountain_Locations.Name=Yelp.Name AND'
+    statement+= " Mountain_Locations.State=Yelp.State ORDER BY TOTAL "
+    statement+= 'DESC LIMIT "'+str(limit)+'" '
+    cur.execute(statement)
+    snow_data = []
+    for row in cur:
+        snow_data.append(row)
+    conn.close()
+
+    trace1 = Bar(
+        x=[x[0] for x in snow_data],
+        y=[x[17] for x in snow_data]
+        )
+    return {
+    'data': [trace1],
+    'layout': Layout(
+        plot_bgcolor= colors['background'],
+        paper_bgcolor= colors['background'],
+        title= ''+str(limit)+' Mountains with the Most Predicted Snowfall',
+        titlefont = dict(
+            family= 'Lato',
+            size= 30,
+            color= colors['black']
+            ),
+        barmode='group',
+        yaxis= dict(
+            title= 'Inches',
+            titlefont = dict(
+                family= 'Lato',
+                size= 20,
+                color= colors['black']
+                ),
+            automargin=True,
+            rangemode= 'nonnegative'
+            ),
+        xaxis= dict(
+            fixedrange = True,
+            showticklabels=True,
+            tickangle=45,
+            tickfont= dict(
+                family='Lato',
+                color='black'
+                )
+            ),
+        margin= Margin(
+            l=75,
+            r=75,
+            b=150
+        ),
+        bargap= .35
+        )
+    }
 
 if __name__ == '__main__':
     app.run_server(debug=True)
