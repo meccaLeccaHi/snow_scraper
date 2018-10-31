@@ -1,11 +1,11 @@
+# Ignore anything named 'secrets.py'
 secrets.py
-__*__
-*.pdf
-*.pages
-skiresortinfo.py
-cache-skiresortinfo.json
-Checkpoint
-worldplot.py
-state-provinces-plot.py
-flask
-temp.*
+
+# Ignore anything named 'snow_data'
+snow_data
+
+# Ignore files with the extension '.json'
+*.json
+
+# Ignore files with the extension '.ipynb'
+*.ipynb

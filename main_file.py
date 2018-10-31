@@ -1,6 +1,5 @@
 import sqlite3
 import google_api
-import skiresortinfo
 import yelp
 import opensnow
 
@@ -74,7 +73,7 @@ def avg_snow(inches):
     else:
         return float(a)
 
-def insert_data():
+def insert_snow_data():
     conn = sqlite3.connect('snowfall.db')
     cur = conn.cursor()
 
@@ -105,6 +104,15 @@ def insert_data():
             statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             cur.execute(statement, insertion)
     conn.commit()
+    
+    conn.close()
+    
+    return data
+
+def insert_place_data(data):
+    conn = sqlite3.connect('snowfall.db')
+    cur = conn.cursor()
+
     google_data_list = []
     for c in data:
         for d in c[1].items():
@@ -119,7 +127,7 @@ def insert_data():
             cur.execute(statement, insertion)
             google_data_list.append((name, lat, long, state_name))
     conn.commit()
-
+    
     count = 1
     for c in google_data_list:
         yelp_data = yelp.yelp_individual_request(c[0], c[1], c[2])
@@ -130,7 +138,7 @@ def insert_data():
         conn.commit()
         count +=1
     conn.commit()
-
+    
     statement = '''
     UPDATE Mountain_Locations
     SET Id = (SELECT Id FROM Mountain_Snow
@@ -143,7 +151,7 @@ def insert_data():
     '''
     cur.execute(statement)
     conn.commit()
-
+    
     statement = '''
     UPDATE Yelp
     SET Id = (SELECT Id FROM Mountain_Snow
@@ -154,9 +162,10 @@ def insert_data():
     '''
     cur.execute(statement)
     conn.commit()
-
+    
     conn.close()
 
 if __name__ == "__main__":
     init_db()
-    insert_data()
+    data = insert_snow_data()
+    insert_place_data(data)

@@ -2,6 +2,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
+'''
 def make_request_using_cache(url):
     try:
         cache_file = open('cache-opensnow.json', 'r')
@@ -22,14 +23,23 @@ def make_request_using_cache(url):
         fw1.write(dumped_json_cache)
         fw1.close()
         return CACHE_DICTION[unique_ident]
-
+'''
 
 def crawl_state(url):
-    start_data = make_request_using_cache(url)
+    '''
+    Scrape state page
+    Usage: >>> crawl_state('https://opensnow.com/state/CO')
+    '''
+    # start_data = make_request_using_cache(url)
+    resp = requests.get(url)
+    start_data = resp.text
     state_soup = BeautifulSoup(start_data, 'html.parser')
     state_name = state_soup.find(class_='title').get_text()
     state_name_table = state_soup.find(class_='location-names-table')
     state_names = state_name_table.find_all(class_='name')
+    
+    # Use 2 dictionaries to contain our results:
+    # 1. Resort dictionary (resort_dict)
     resort_dict = {}
     for c in state_names:
         resort_url = c.find('a')['href']
@@ -38,12 +48,15 @@ def crawl_state(url):
             'URL': 'https://opensnow.com' + resort_url, 'Snowfall': [], 'State': ''}
     state_resort_snow_table = state_soup.find(
         class_='scrolling-forecast-table')
+    # 2. Dates dictionary (dates)
     dates = []
     for c in state_resort_snow_table.find(class_='fdate-row'):
         try:
             dates.append(c.get_text())
         except:
             continue
+    
+    # Scrape forecasted snowfall from page
     resort_total_snowfall = []
     for c in state_resort_snow_table.find_all('tr')[2:]:
         individual_resort_snowfall = []
@@ -53,6 +66,8 @@ def crawl_state(url):
             except:
                 continue
         resort_total_snowfall.append(individual_resort_snowfall)
+    
+    # Refine result dicts
     count = 0
     for c in resort_dict.items():
         c[1]['State'] = state_name
@@ -65,7 +80,9 @@ def crawl_state(url):
 def crawl_main():
     pre_url = 'https://opensnow.com'
     start_url = 'https://opensnow.com/forecasts'
-    cache_data_start = make_request_using_cache(start_url)
+    resp = requests.get(start_url)
+    cache_data_start = resp.text
+    #cache_data_start = make_request_using_cache(start_url)
     start_soup = BeautifulSoup(cache_data_start, 'html.parser')
     table_data = start_soup.find(class_='col-md-8')
     table_data2 = table_data.find(class_='forecast-col')
@@ -84,6 +101,3 @@ def crawl_main():
         except:
             continue
     return data
-
-
-# print(crawl_state('https://opensnow.com/state/CO'))
