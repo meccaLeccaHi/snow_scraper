@@ -7,5 +7,8 @@ snow_data
 # Ignore files with the extension '.json'
 *.json
 
+# Ignore files with the extension '.db'
+*.db
+
 # Ignore files with the extension '.ipynb'
 *.ipynb
