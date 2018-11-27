@@ -1,7 +1,8 @@
 import sqlite3
 import google_api
-import yelp
+# import yelp
 import opensnow
+import time
 
 def init_db():
     conn = sqlite3.connect('snowfall.db')
@@ -14,10 +15,15 @@ def init_db():
     statement = '''
         DROP TABLE IF EXISTS 'Mountain_Locations';
     '''
+    # cur.execute(statement)
+    # conn.commit()
+    # statement = '''
+    #     DROP TABLE IF EXISTS 'Yelp';
+    # '''
     cur.execute(statement)
     conn.commit()
     statement = '''
-        DROP TABLE IF EXISTS 'Yelp';
+        DROP TABLE IF EXISTS 'timestamp';
     '''
     cur.execute(statement)
     conn.commit()
@@ -50,14 +56,22 @@ def init_db():
             'Longitude' INTEGER NOT NULL
         );
     '''
+    # cur.execute(statement)
+    #
+    # statement = '''
+    #     CREATE TABLE 'Yelp' (
+    #         'Id' INTEGER,
+    #         'Name' TEXT NOT NULL,
+    #         'State' TEXT NOT NULL,
+    #         'Rating' TEXT NOT NULL
+    #     );
+    # '''
     cur.execute(statement)
 
     statement = '''
-        CREATE TABLE 'Yelp' (
+        CREATE TABLE 'Timestamp' (
             'Id' INTEGER,
-            'Name' TEXT NOT NULL,
-            'State' TEXT NOT NULL,
-            'Rating' TEXT NOT NULL
+            'Time' FLOAT NOT NULL
         );
     '''
     cur.execute(statement)
@@ -73,7 +87,7 @@ def avg_snow(inches):
     else:
         return float(a)
 
-def insert_snow_data():
+def insert_data():
     conn = sqlite3.connect('snowfall.db')
     cur = conn.cursor()
 
@@ -104,15 +118,6 @@ def insert_snow_data():
             statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             cur.execute(statement, insertion)
     conn.commit()
-    
-    conn.close()
-    
-    return data
-
-def insert_place_data(data):
-    conn = sqlite3.connect('snowfall.db')
-    cur = conn.cursor()
-
     google_data_list = []
     for c in data:
         for d in c[1].items():
@@ -127,18 +132,24 @@ def insert_place_data(data):
             cur.execute(statement, insertion)
             google_data_list.append((name, lat, long, state_name))
     conn.commit()
-    
-    count = 1
-    for c in google_data_list:
-        yelp_data = yelp.yelp_individual_request(c[0], c[1], c[2])
-        insertion = (None, c[0], c[3], yelp_data[1])
-        statement = 'INSERT INTO "Yelp" '
-        statement += 'VALUES (?, ?, ?, ?)'
-        cur.execute(statement, insertion)
-        conn.commit()
-        count +=1
+
+    # count = 1
+    # for c in google_data_list:
+    #     yelp_data = yelp.yelp_individual_request(c[0], c[1], c[2])
+    #     insertion = (None, c[0], c[3], yelp_data[1])
+    #     statement = 'INSERT INTO "Yelp" '
+    #     statement += 'VALUES (?, ?, ?, ?)'
+    #     cur.execute(statement, insertion)
+    #     #conn.commit()
+    #     count +=1
+    # conn.commit()
+
+    insertion = (None, time.time())
+    statement = 'INSERT INTO "timestamp" '
+    statement += 'VALUES (?, ?)'
+    cur.execute(statement, insertion)
     conn.commit()
-    
+
     statement = '''
     UPDATE Mountain_Locations
     SET Id = (SELECT Id FROM Mountain_Snow
@@ -151,7 +162,7 @@ def insert_place_data(data):
     '''
     cur.execute(statement)
     conn.commit()
-    
+
     statement = '''
     UPDATE Yelp
     SET Id = (SELECT Id FROM Mountain_Snow
@@ -162,10 +173,9 @@ def insert_place_data(data):
     '''
     cur.execute(statement)
     conn.commit()
-    
+
     conn.close()
 
 if __name__ == "__main__":
     init_db()
-    data = insert_snow_data()
-    insert_place_data(data)
+    insert_data()
