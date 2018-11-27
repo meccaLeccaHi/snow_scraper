@@ -12,3 +12,5 @@ snow_data
 
 # Ignore files with the extension '.ipynb'
 *.ipynb
+
+/drafts
