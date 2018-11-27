@@ -166,9 +166,10 @@ def gen_map(map_data):
     # 'classification' onto a list of record dictionaries with that
     # classification value.
 
-    layout_map['mapbox']['center']['lon'] = map_data['Longitude'].mean()
-    layout_map['mapbox']['center']['lat'] = map_data['Latitude'].mean()
-    layout_map['mapbox']['zoom'] = 4-(map_data.Latitude.max()-map_data.Latitude.min())/15
+    ## FIX THIS
+    layout_map['mapbox']['center']['lon'] = map_data['Longitude'][0:10].mean()
+    layout_map['mapbox']['center']['lat'] = map_data['Latitude'][0:10].mean()
+    layout_map['mapbox']['zoom'] = 4-(map_data.Latitude[0:10].max()-map_data.Latitude[0:10].min())/15
 
     return {
         "data": [{
