@@ -23,6 +23,40 @@ def make_request_using_cache(url):
         fw1.close()
         return CACHE_DICTION[unique_ident]
 
+def scrape_base(url):
+    html = requests.get(url)
+    soup = BeautifulSoup(html.text, 'html.parser')
+    report_vals = soup.body.find_all('div',{'class':'snow-report-value'})
+
+    if not report_vals:
+        depth = '--'
+    else:
+        depth = report_vals[1].text.strip('"')
+
+    print()
+    print(url)
+    print()
+    print(report_vals)
+    print()
+    print(depth)
+    print()
+    return depth
+
+def crawl_forecast(url):
+    html = requests.get(url)
+    soup = BeautifulSoup(html.text, 'html.parser')
+
+    data = []
+    table = soup.find('table', attrs={'class':'scrolling-forecast-table'})
+    table_body = table.find('tbody')
+
+    rows = table_body.find_all('tr')
+    for row in rows:
+        cols = row.find_all('td')
+        cols = [ele.text.strip() for ele in cols]
+        data.append([ele for ele in cols if ele])
+
+    return data
 
 def crawl_state(url):
     start_data = make_request_using_cache(url)
@@ -34,9 +68,11 @@ def crawl_state(url):
     for c in state_names:
         resort_url = 'https://opensnow.com' + c.find('a')['href']
         ## Retrieve base depth here by scraping from <resort_url>
+        #base_depth = scrape_base(resort_url)
+        base_depth = '--'
         resort_name = c.find('a').get_text()
         resort_dict[resort_name] = {
-            'URL': resort_url, 'Snowfall': [], 'State': ''}
+            'URL': resort_url, 'Base': base_depth, 'Snowfall': [], 'State': ''}
     state_resort_snow_table = state_soup.find(
         class_='scrolling-forecast-table')
     dates = []
@@ -61,8 +97,15 @@ def crawl_state(url):
         c[1]['Snowfall'] = resort_total_snowfall[count]
         count += 1
 
-    return (dates, resort_dict, state_name)
+    # Crawl for forecast
+    forecast = crawl_forecast(url+'/reports')
+    for v, f in zip(resort_dict.values(),forecast):
+        try:
+            v['Base'] = f[3].strip('"')
+        except:
+            v['Base'] = '--'
 
+    return (dates, resort_dict, state_name)
 
 def crawl_main():
     pre_url = 'https://opensnow.com'
@@ -71,7 +114,7 @@ def crawl_main():
     start_soup = BeautifulSoup(cache_data_start, 'html.parser')
     table_data = start_soup.find(class_='col-md-8')
     table_data2 = table_data.find(class_='forecast-col')
-    count = 0
+    #count = 0
     data = []
     for c in table_data2.find_all('a'):
         try:

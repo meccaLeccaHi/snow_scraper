@@ -38,8 +38,8 @@ slider_style = {'color': colors['black'], 'font-size': '1.5em',
 
 def fetch_data():
     # Import snowfall data from db
-    statement = 'SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Latitude, '
-    statement+= 'Longitude, TOTAL FROM Mountain_Locations '
+    statement = 'SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Mountain_Snow.Base, '
+    statement+= 'Latitude, Longitude, TOTAL FROM Mountain_Locations '
     statement+= "JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id "
     #statement+= 'JOIN Yelp ON Mountain_Locations.Id=Yelp.Id'
     conn = sqlite3.connect('snowfall.db')
@@ -49,8 +49,8 @@ def fetch_data():
     stateANDProvince = resort_df.State.unique()
     # Create text label for each resort on the map
     def text_label(row):
-        return '{}: {} in<br>{}</br>'.format(row.MountainName, row.TOTAL,
-                    row.State)  ## Add <base_inches> here, once it exists
+        return '{}: {} in<br>{}</br>{}" base'.format(row.MountainName, row.TOTAL,
+                    row.State, row.Base)
     resort_df['text'] = resort_df.apply(text_label, axis=1)
     # Set variable telling us when the database was last updated
     cur = conn.cursor()
