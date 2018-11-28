@@ -13,4 +13,5 @@ snow_data
 # Ignore files with the extension '.ipynb'
 *.ipynb
 
-/drafts
+# exclude everything in 'drafts' folder
+drafts/*
