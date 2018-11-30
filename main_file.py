@@ -28,16 +28,21 @@ def init_db():
             'State' TEXT NOT NULL,
             'URL' TEXT NOT NULL,
             'Base' TEXT NOT NULL,
-            'day1M' TEXT NOT NULL,
+            'day1D' TEXT NOT NULL,
             'day1N' TEXT NOT NULL,
-            'day2M' TEXT NOT NULL,
+            'day2D' TEXT NOT NULL,
             'day2N' TEXT NOT NULL,
-            'day3M' TEXT NOT NULL,
+            'day3D' TEXT NOT NULL,
             'day3N' TEXT NOT NULL,
-            'day4M' TEXT NOT NULL,
+            'day4D' TEXT NOT NULL,
             'day4N' TEXT NOT NULL,
-            'day5M' TEXT NOT NULL,
+            'day5D' TEXT NOT NULL,
             'day5N' TEXT NOT NULL,
+            'day1TOT' INTEGER NOT NULL,
+            'day2TOT' INTEGER NOT NULL,
+            'day3TOT' INTEGER NOT NULL,
+            'day4TOT' INTEGER NOT NULL,
+            'day5TOT' INTEGER NOT NULL,
             'TOTAL' INTEGER NOT NULL
         );
     '''
@@ -47,8 +52,8 @@ def init_db():
             'Id' INTEGER,
             'Name' TEXT NOT NULL,
             'State' TEXT NOT NULL,
-            'Latitude' INTEGER NOT NULL,
-            'Longitude' INTEGER NOT NULL
+            'Latitude' INTEGER,
+            'Longitude' INTEGER
         );
     '''
     cur.execute(statement)
@@ -85,23 +90,29 @@ def insert_data():
             url = d[1]['URL']
             state_name = d[1]['State']
             base_depth = d[1]['Base']
-            d1m = snowfall[0]
-            d1n = snowfall[1]
-            d2m = snowfall[2]
-            d2n = snowfall[3]
-            d3m = snowfall[4]
-            d3n = snowfall[5]
-            d4m = snowfall[6]
-            d4n = snowfall[7]
-            d5m = snowfall[8]
-            d5n = snowfall[9]
-            total = avg_snow(d1m)+avg_snow(d1n)+avg_snow(d2m)+avg_snow(d2n)
-            total += avg_snow(d3m)+avg_snow(d3n)+avg_snow(d4m)+avg_snow(d4n)
-            total += avg_snow(d5m)+avg_snow(d5n)
-            insertion = (None, name, state_name, url, base_depth, d1m, d1n, d2m,
-                         d2n, d3m, d3n, d4m, d4n, d5m, d5n, total)
+            day1D = snowfall[0]
+            day1N = snowfall[1]
+            day2D = snowfall[2]
+            day2N = snowfall[3]
+            day3D = snowfall[4]
+            day3N = snowfall[5]
+            day4D = snowfall[6]
+            day4N = snowfall[7]
+            day5D = snowfall[8]
+            day5N = snowfall[9]
+            day1total = avg_snow(day1D)+avg_snow(day1N)
+            day2total = avg_snow(day2D)+avg_snow(day2N)
+            day3total = avg_snow(day3D)+avg_snow(day3N)
+            day4total = avg_snow(day4D)+avg_snow(day4N)
+            day5total = avg_snow(day5D)+avg_snow(day5N)
+            total = avg_snow(day1D)+avg_snow(day1N)+avg_snow(day2D)+avg_snow(day2N)
+            total += avg_snow(day3D)+avg_snow(day3N)+avg_snow(day4D)+avg_snow(day4N)
+            total += avg_snow(day5D)+avg_snow(day5N)
+            insertion = (None, name, state_name, url, base_depth, day1D, day1N, day2D,
+                         day2N, day3D, day3N, day4D, day4N, day5D, day5N, day1total,
+                         day2total, day3total, day4total, day5total, total)
             statement = 'INSERT INTO "Mountain_Snow" '
-            statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            statement += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
             cur.execute(statement, insertion)
     conn.commit()
     google_data_list = []

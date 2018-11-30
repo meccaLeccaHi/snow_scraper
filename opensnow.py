@@ -33,13 +33,6 @@ def scrape_base(url):
     else:
         depth = report_vals[1].text.strip('"')
 
-    print()
-    print(url)
-    print()
-    print(report_vals)
-    print()
-    print(depth)
-    print()
     return depth
 
 def crawl_forecast(url):
@@ -67,12 +60,11 @@ def crawl_state(url):
     resort_dict = {}
     for c in state_names:
         resort_url = 'https://opensnow.com' + c.find('a')['href']
-        ## Retrieve base depth here by scraping from <resort_url>
-        #base_depth = scrape_base(resort_url)
-        base_depth = '--'
         resort_name = c.find('a').get_text()
         resort_dict[resort_name] = {
-            'URL': resort_url, 'Base': base_depth, 'Snowfall': [], 'State': ''}
+            'URL': resort_url, 'Snowfall': [], 'State': ''}
+        # resort_dict[resort_name] = {
+        #     'URL': resort_url, 'Base': '--', 'Snowfall': [], 'State': ''}
     state_resort_snow_table = state_soup.find(
         class_='scrolling-forecast-table')
     dates = []

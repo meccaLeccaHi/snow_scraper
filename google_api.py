@@ -39,8 +39,6 @@ def get_lat_and_long(ski_name, ski_state):
 		longitude = information['geometry']['location']['lng']
 		return(lattitude, longitude)
 	else:
-		return('Error', 'Error')
-
-
+		return(float('nan'), float('nan'))
 
 # print(get_lat_and_long('Beaver Creek', 'Colorado'))
