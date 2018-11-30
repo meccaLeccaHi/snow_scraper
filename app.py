@@ -104,12 +104,12 @@ layout_map = dict(
             lon=-105.25,
             lat=50
         ),
-        zoom=1.75,
+        zoom=2,
     )
 )
 
 
-def gen_map(table_data, colorbar=False):
+def gen_map(table_data, colorbar=False, zoom=2):
     # groupby returns a dictionary mapping the values of the first field
     # 'classification' onto a list of record dictionaries with that
     # classification value.
@@ -122,7 +122,7 @@ def gen_map(table_data, colorbar=False):
     # ## FIX THIS
     # layout_map['mapbox']['center']['lon'] = map_data['Longitude'].mean()
     # layout_map['mapbox']['center']['lat'] = map_data['Latitude'].mean()
-    # layout_map['mapbox']['zoom'] = 4-(map_data.Latitude[:-10].max()-map_data.Latitude.min())/15
+    layout_map['mapbox']['zoom'] = zoom
 
     if colorbar:
         cb = dict(
@@ -374,8 +374,8 @@ def update_state_map(rows, selected_row_indices):
     aux = pd.DataFrame(rows)
     temp_df = aux.ix[selected_row_indices, :]
     if len(selected_row_indices) == 0:
-        return gen_map(aux)
-    return gen_map(temp_df)
+        return gen_map(aux, zoom=3)
+    return gen_map(temp_df, zoom=3)
 
 
 @app.callback(
