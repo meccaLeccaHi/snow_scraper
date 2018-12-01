@@ -1,7 +1,7 @@
 import sqlite3
 import google_api
 import opensnow
-import time
+from datetime import datetime
 
 def init_db():
     conn = sqlite3.connect('snowfall.db')
@@ -27,7 +27,7 @@ def init_db():
             'MountainName' TEXT NOT NULL,
             'State' TEXT NOT NULL,
             'URL' TEXT NOT NULL,
-            'Base' TEXT NOT NULL,
+            'Base' INTEGER,
             'day1D' TEXT NOT NULL,
             'day1N' TEXT NOT NULL,
             'day2D' TEXT NOT NULL,
@@ -61,7 +61,7 @@ def init_db():
     statement = '''
         CREATE TABLE 'Timestamp' (
             'Id' INTEGER,
-            'Time' FLOAT NOT NULL
+            'Time' TEXT NOT NULL
         );
     '''
     cur.execute(statement)
@@ -130,7 +130,7 @@ def insert_data():
             google_data_list.append((name, lat, long, state_name))
     conn.commit()
 
-    insertion = (None, time.time())
+    insertion = (None, datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
     statement = 'INSERT INTO "timestamp" '
     statement += 'VALUES (?, ?)'
     cur.execute(statement, insertion)

@@ -23,17 +23,17 @@ def make_request_using_cache(url):
         fw1.close()
         return CACHE_DICTION[unique_ident]
 
-def scrape_base(url):
-    html = requests.get(url)
-    soup = BeautifulSoup(html.text, 'html.parser')
-    report_vals = soup.body.find_all('div',{'class':'snow-report-value'})
-
-    if not report_vals:
-        depth = '--'
-    else:
-        depth = report_vals[1].text.strip('"')
-
-    return depth
+# def scrape_base(url):
+#     html = requests.get(url)
+#     soup = BeautifulSoup(html.text, 'html.parser')
+#     report_vals = soup.body.find_all('div',{'class':'snow-report-value'})
+#
+#     if not report_vals:
+#         depth = '--'
+#     else:
+#         depth = report_vals[1].text.strip('"')
+#
+#     return depth
 
 def crawl_forecast(url):
     html = requests.get(url)
@@ -93,9 +93,9 @@ def crawl_state(url):
     forecast = crawl_forecast(url+'/reports')
     for v, f in zip(resort_dict.values(),forecast):
         try:
-            v['Base'] = f[3].strip('"')
+            v['Base'] = int(f[3].strip('"'))
         except:
-            v['Base'] = '--'
+            v['Base'] = float('NaN')
 
     return (dates, resort_dict, state_name)
 
