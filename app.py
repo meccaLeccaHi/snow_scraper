@@ -15,31 +15,43 @@ import sqlite3
 import secrets
 import pandas as pd
 import datetime
+import json
 
 app = dash.Dash(__name__)
 server = app.server
 app.title = 'SnoDash'
 
-region_options = {
-    'Mid-west': ['Illinois', 'Indiana', 'Michigan', 'Minnesota', 'Ohio',
-    'Wisconsin', 'Iowa', 'Kansas', 'Missouri', 'Nebraska', 'Oklahoma',
-    'North Dakota', 'South Dakota'],
-    'New England': ['Connecticut', 'Maine', 'Massachusetts', 'New Hampshire',
-    'Rhode Island', 'Vermont', 'New Jersey', 'New York', 'Delaware',
-    'District of Columbia', 'Maryland', 'Pennsylvania'],
-    'South': ['Alabama', 'Florida', 'Georgia', 'Kentucky', 'Mississippi',
-    'North Carolina', 'South Carolina', 'Tennessee', 'Virginia',
-    'West Virginia', 'Puerto Rico', 'US Virgin Islands', 'Arkansas',
-    'Louisiana', 'Texas'],
-    'Rockies': ['New Mexico', 'Colorado', 'Montana', 'Utah', 'Wyoming', 'Idaho'],
-    'West Coast': ['Arizona', 'California', 'Hawaii', 'Nevada',
-    'American Samoa', 'Guam', 'Northern Mariana Islands', 'Alaska', 'Oregon',
-    'Washington']
-}
+# Load state geo data
+with open('geo_data.json') as json_data:
+    region_options = json.load(json_data)
+
+# region_options = {
+#     'Mid-west': ['Illinois', 'Indiana', 'Michigan', 'Minnesota', 'Ohio',
+#     'Wisconsin', 'Iowa', 'Kansas', 'Missouri', 'Nebraska', 'Oklahoma',
+#     'North Dakota', 'South Dakota'],
+#     'New England': ['Connecticut', 'Maine', 'Massachusetts', 'New Hampshire',
+#     'Rhode Island', 'Vermont', 'New Jersey', 'New York', 'Delaware',
+#     'District of Columbia', 'Maryland', 'Pennsylvania'],
+#     'South': ['Alabama', 'Florida', 'Georgia', 'Kentucky', 'Mississippi',
+#     'North Carolina', 'South Carolina', 'Tennessee', 'Virginia',
+#     'West Virginia', 'Puerto Rico', 'US Virgin Islands', 'Arkansas',
+#     'Louisiana', 'Texas'],
+#     'Rockies': ['New Mexico', 'Colorado', 'Montana', 'Utah', 'Wyoming', 'Idaho'],
+#     'West Coast': ['Arizona', 'California', 'Hawaii', 'Nevada',
+#     'American Samoa', 'Guam', 'Northern Mariana Islands', 'Alaska', 'Oregon',
+#     'Washington'],
+#     'Canadian West': ['British Columbia', 'Alberta', 'Saskatchewan', 'Yukon',
+#     'Northwest Territories'],
+#     'Canadian East': ['Manitoba', 'Ontario', 'Quebec', 'New Brunswick',
+#     'Nova Scotia', 'Prince Edward Island', 'Newfoundland and Labrador',
+#     'Nunavut']
+# }
+
+#fix
 region_options['All']=sum(region_options.values(),[])
 
-title = '<b>Predicted Snowfall for the Next 5 Days</b><br>'
-title += 'Source: <a href="https://opensnow.com/">Open Snow</a></br>'
+#title = '<b>Predicted Snowfall for the Next 5 Days</b><br>'
+#title += 'Source: <a href="https://opensnow.com/">Open Snow</a></br>'
 #title += "<a href='/about' target='_self'>About This Project</a>"
 
 slider_style = {'font-size': '1.5em'}
@@ -121,13 +133,13 @@ layout_map = dict(
     autosize=True,
     height=500,
     font=dict(color='#191A1A'),
-    title=title,
+    title='<b>Predicted Snowfall for the Next 5 Days</b>',
     titlefont=dict(color='#191A1A', size='14'),
     margin=dict(
-        l=35,
-        r=35,
-        b=35,
-        t=45
+        l=25,
+        r=25,
+        b=25,
+        t=25
     ),
     hovermode='closest',
     plot_bgcolor='#fffcfc',
