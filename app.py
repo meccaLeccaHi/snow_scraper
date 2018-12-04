@@ -22,33 +22,8 @@ server = app.server
 app.title = 'SnoDash'
 
 # Load state geo data
-with open('geo_data.json') as json_data:
+with open('cache-geo.json') as json_data:
     region_options = json.load(json_data)
-
-# region_options = {
-#     'Mid-west': ['Illinois', 'Indiana', 'Michigan', 'Minnesota', 'Ohio',
-#     'Wisconsin', 'Iowa', 'Kansas', 'Missouri', 'Nebraska', 'Oklahoma',
-#     'North Dakota', 'South Dakota'],
-#     'New England': ['Connecticut', 'Maine', 'Massachusetts', 'New Hampshire',
-#     'Rhode Island', 'Vermont', 'New Jersey', 'New York', 'Delaware',
-#     'District of Columbia', 'Maryland', 'Pennsylvania'],
-#     'South': ['Alabama', 'Florida', 'Georgia', 'Kentucky', 'Mississippi',
-#     'North Carolina', 'South Carolina', 'Tennessee', 'Virginia',
-#     'West Virginia', 'Puerto Rico', 'US Virgin Islands', 'Arkansas',
-#     'Louisiana', 'Texas'],
-#     'Rockies': ['New Mexico', 'Colorado', 'Montana', 'Utah', 'Wyoming', 'Idaho'],
-#     'West Coast': ['Arizona', 'California', 'Hawaii', 'Nevada',
-#     'American Samoa', 'Guam', 'Northern Mariana Islands', 'Alaska', 'Oregon',
-#     'Washington'],
-#     'Canadian West': ['British Columbia', 'Alberta', 'Saskatchewan', 'Yukon',
-#     'Northwest Territories'],
-#     'Canadian East': ['Manitoba', 'Ontario', 'Quebec', 'New Brunswick',
-#     'Nova Scotia', 'Prince Edward Island', 'Newfoundland and Labrador',
-#     'Nunavut']
-# }
-
-#fix
-region_options['All']=sum(region_options.values(),[])
 
 #title = '<b>Predicted Snowfall for the Next 5 Days</b><br>'
 #title += 'Source: <a href="https://opensnow.com/">Open Snow</a></br>'
@@ -116,10 +91,10 @@ layout_table = dict(
     font=dict(color='#191A1A'),
     titlefont=dict(color='#191A1A', size='14'),
     margin=dict(
-        l=35,
-        r=35,
-        b=35,
-        t=45
+        l=5,
+        r=5,
+        b=5,
+        t=5
     ),
     hovermode='closest',
     plot_bgcolor='#fffcfc',
@@ -136,9 +111,9 @@ layout_map = dict(
     title='<b>Predicted Snowfall for the Next 5 Days</b>',
     titlefont=dict(color='#191A1A', size='14'),
     margin=dict(
-        l=25,
-        r=25,
-        b=25,
+        l=5,
+        r=5,
+        b=5,
         t=25
     ),
     hovermode='closest',
@@ -169,8 +144,8 @@ layout_state_bar = dict(
         rangemode='nonnegative'
     ),
     margin=go.layout.Margin(
-        l=75,
-        r=75,
+        l=5,
+        r=5,
         b=150
     ),
     bargap=.35
@@ -309,7 +284,7 @@ app.layout = html.Div(
                 dcc.Graph(
                 id='state-snow-bar',
                 style={'margin-left': '0', 'margin-right': '0',
-                    'margin-bottom':'0px'}
+                    'margin-bottom':'0'}
                 ),
             ],
             className='row'
