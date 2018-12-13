@@ -17,7 +17,7 @@ app = dash.Dash(__name__)
 server = app.server
 app.title = 'FreshyFinder'
 
-# Load state geo data
+# Load state data for controls
 with open('cache-geo.json') as json_data:
     region_options = json.load(json_data)
 
@@ -35,7 +35,11 @@ def text_label(row):
     return out_str.format(row.MountainName, row.Total,
                 row.Base, row.State)
 
-def fetch_data():
+# Refine forecasted snowfall for each resort on the map
+def snow_forecast(row):
+    return [row[['day1TOT', 'day2TOT', 'day3TOT', 'day4TOT', 'day5TOT']]]
+
+def fetch_data(resort_id='All'):
     # Import snowfall data from db
     statement = 'SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Mountain_Snow.Base, '
     statement+= 'Latitude, Longitude, TOTAL, day1D, day1N, day2D, day2N, day3D, '
@@ -44,33 +48,48 @@ def fetch_data():
     statement+= 'JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id '
 
     conn = sqlite3.connect('snowfall.db')
-    # Sort by expected snowfall (greatest to least)
-    resort_data = pd.read_sql_query(statement, conn).sort_values(by=['TOTAL'], ascending=False)
-    # Rename columns for pretty tables
-    resort_data.rename(index=str, columns={'TOTAL': 'Total'}, inplace=True)
-    # Set variable telling us which states/provinces are included
-    stateANDProvince = resort_data.State.unique()
 
-    region_vals = {}
-    for k, v in region_options.items():
-        region_vals[k] = [state for state in v if state in stateANDProvince]
-
-    # Create text label for each resort on the map
-    resort_data['text'] = resort_data.apply(text_label, axis=1)
-
-    # Refine forecasted snowfall for each resort on the map
-    def snow_forecast(row):
-        return [row[['day1TOT', 'day2TOT', 'day3TOT', 'day4TOT', 'day5TOT']]]
-    resort_data['Forecast'] = resort_data.apply(snow_forecast, axis=1)
-    # Set variable telling us when the database was last updated
+    # Read when the database was last updated
     cur = conn.cursor()
     cur.execute('SELECT Time FROM Timestamp ORDER BY ID DESC LIMIT 1')
     scrape_time = cur.fetchone()[0]
-    conn.close()
 
-    return(resort_data, stateANDProvince, scrape_time, region_vals)
+    # Sort by expected snowfall (greatest to least)
+    resort_data = pd.read_sql_query(statement, conn).sort_values(by=['TOTAL'], ascending=False)
 
+    if resort_id!='All':
+        # Select single resort
+        resort_data = resort_data.iloc[resort_id]
+        return(resort_data, scrape_time)
+    else:
+        # Rename columns for pretty tables
+        resort_data.rename(index=str, columns={'TOTAL': 'Total'}, inplace=True)
+
+        #print(resort_data)
+
+        # Set variable telling us which states/provinces are included
+        stateANDProvince = resort_data.State.unique()
+
+        region_vals = {}
+        for k, v in region_options.items():
+            region_vals[k] = [state for state in v if state in stateANDProvince]
+
+        # Create text label for each resort on the map
+        resort_data['text'] = resort_data.apply(text_label, axis=1)
+
+        # Refine forecasted snowfall for each resort on the map
+        resort_data['Forecast'] = resort_data.apply(snow_forecast, axis=1)
+
+        # Close connection to database
+        conn.close()
+
+        return(resort_data, stateANDProvince, scrape_time, region_vals)
+
+# Fetch the data
 resort_data, stateANDProvince, scrape_time, region_vals = fetch_data()
+# print(stateANDProvince[0])
+# print()
+# print(region_options['All'][stateANDProvince[0]])
 # Set variables to be displayed in table
 table_data = resort_data[['MountainName','State','Base','Total','Forecast']].copy()
 
@@ -96,15 +115,15 @@ layout_table = dict(
         l=5,
         r=5,
         b=5,
-        t=5
+        t=10
     ),
     hovermode='closest',
     plot_bgcolor='#fffcfc',
     paper_bgcolor='#fffcfc',
-    legend=dict(font=dict(size=10), orientation='h'),
+    #legend=dict(font=dict(size=10), orientation='h'),
 )
 layout_table['font-size'] = '12'
-layout_table['margin-top'] = '20'
+#layout_table['margin-top'] = '10'
 
 layout_map = dict(
     autosize=True,
@@ -122,6 +141,7 @@ layout_map = dict(
     plot_bgcolor='#fffcfc',
     paper_bgcolor='#fffcfc',
     legend=dict(font=dict(size=10), orientation='h'),
+    geode=dict(scope='north america'),
     mapbox=dict(
         accesstoken=secrets.mapbox_key,
         style='dark',
@@ -150,9 +170,31 @@ layout_state_bar = dict(
         r=5,
         b=150
     ),
-    bargap=.35
+    bargap=.25
 )
 
+layout_individual_bar = dict(
+    barmode='group',
+    xaxis=dict(
+        showticklabels=True,
+        tickangle=45,
+        tickformat='%m/%d',
+        tickmode='linear',
+        #fixedrange=True,
+    ),
+    yaxis= dict(
+        side='right',
+        title='Inches',
+        automargin=True,
+        rangemode='nonnegative'
+    ),
+    margin=go.layout.Margin(
+        l=0,
+        r=5,
+        b=50
+    ),
+    bargap=.25
+)
 
 def gen_map(table_data, colorbar=False, zoom=2, location='USA-states'):
     # groupby returns a dictionary mapping the values of the first field
@@ -167,7 +209,7 @@ def gen_map(table_data, colorbar=False, zoom=2, location='USA-states'):
     # ## FIX THIS
     # layout_map['mapbox']['center']['lon'] = map_data['Longitude'].mean()
     # layout_map['mapbox']['center']['lat'] = map_data['Latitude'].mean()
-    layout_map['mapbox']['zoom'] = zoom
+    # layout_map['mapbox']['zoom'] = zoom
 
     if colorbar:
         cb = dict(
@@ -201,39 +243,60 @@ def gen_map(table_data, colorbar=False, zoom=2, location='USA-states'):
     }
 
 app.layout = html.Div(
-    html.Div([
+    [
         # Header
         html.Div(
             [
-                html.H1(children='FreshyFinder',
-                        className='nine columns'),
-                html.Img(
-                    src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Snowboarding.jpg/250px-Snowboarding.jpg',
-                    className='three columns',
-                    style={
-                        'height': '16%',
-                        'width': '16%',
-                        'float': 'right',
-                        'position': 'relative',
-                        'padding-top': 0,
-                        'padding-right': 0
-                    },
+                html.Div(
+                    [
+                        html.H1(children='FreshyFinder'),
+                        html.Div(children='Last Updated: {}'.format(scrape_time),
+                                style = {'fontSize': 14,
+                                        'padding-top': 0}
+                        )
+                    ],
+                    className='three columns'
                 ),
-                html.Div(children='Last Updated: {}'.format(scrape_time),
-                        className='nine columns',
-                           style = {'fontSize': 14, 'padding-top': 0}
+                html.Img(
+                        src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Snowboarding.jpg/250px-Snowboarding.jpg',
+                        className='three columns',
+                        style={
+                            'height': '16%',
+                            'width': '16%',
+                            'float': 'right',
+                            'position': 'relative',
+                            'padding-top': 10,
+                            'padding-right': 30
+                        },
                 )
             ], className='row'
         ),
 
-        # Snowfall map
-        html.Div([
-            dcc.Graph(id='snow-map',
-                    animate=True,
-                    style={'width': '100%'},
-                    figure=gen_map(resort_data, colorbar=True)),
-                ], className='row'
-            ),
+        # Snowfall map + Individual bar chart
+        html.Div(
+            [
+                html.Div(
+                    [
+                        dcc.Graph(id='snow-map',
+                                animate=True,
+                                style={'width': '100%'},
+                                figure=gen_map(resort_data, colorbar=True)
+                        )
+                    ],
+                    className='nine columns'
+                ),
+                html.Div(
+                    [
+                        dcc.Graph(id='individual-bar',
+                                style={'margin-left': '5',
+                                    'margin-right': '5',
+                                    'margin-bottom':'5'}
+                        )
+                    ],
+                    className='three columns'
+                ),
+            ], className='row'
+        ),
 
         # Region radio buttons + State selector
         html.Div(
@@ -272,11 +335,11 @@ app.layout = html.Div(
             [
                 dcc.Graph(
                     id='resort-bar',
-                    style={'margin-left': '0', 'margin-right': '0',
-                        'margin-bottom':'0'}
+                    style={'margin-left': '10', 'margin-right': '10',
+                        'margin-bottom':'10'}
                     ),
                 html.Div([
-                    html.P('Number of Resorts To Include'),
+                    html.P('Number of resorts to include:'),
                     dcc.Slider(
                         id='value-limit',
                         min=s_conf['min'],
@@ -292,7 +355,7 @@ app.layout = html.Div(
                         'margin-right':'5%'}
                 ),
                 html.Div([
-                    html.P('Number of Days To Forecast'),
+                    html.P('Number of days to forecast:'),
                     dcc.Slider(
                         id='value-days',
                         min=s_conf['min'],
@@ -350,14 +413,17 @@ app.layout = html.Div(
                 )
             ], className='row'
         ),
-    ], className='ten columns offset-by-one'))
+    ], className='ten columns offset-by-one')
 
+# Create callbacks
+# State drop-down selector
 @app.callback(
     Output('state-value', 'options'),
     [Input('region-value', 'value')])
 def set_regions(selected_region):
     return [{'label': i, 'value': i} for i in sorted(region_vals[selected_region])]
 
+# Table
 @app.callback(
     Output('snow-table', 'rows'),
     [Input('state-value', 'value'),
@@ -365,15 +431,15 @@ def set_regions(selected_region):
     Input('value-limit', 'value')])
 def update_snow_table(state_or_province, selected_region, limit):
     resort_data, stateANDProvince, scrape_time, region = fetch_data()
-    print(resort_data.columns)
+    #print(resort_data.columns)
     table_data = resort_data[['MountainName','State','Base','Total','Forecast']]
 
     # Impose region selection
     if state_or_province and region!=None:
         resort_data = resort_data.loc[resort_data['State'].isin(region[selected_region])]
 
-    print('foo')
-    print(resort_data)
+    #print('foo')
+    #print(resort_data)
 
     if state_or_province and state_or_province!=None:
         table_data = table_data.loc[table_data['State'].isin(state_or_province)]
@@ -382,6 +448,40 @@ def update_snow_table(state_or_province, selected_region, limit):
 
     return table_data.iloc[0:limit].to_dict('records')
 
+# Main graph -> individual graph
+@app.callback(Output('individual-bar', 'figure'),
+              [Input('snow-map', 'hoverData')])
+def update_individual_bar(main_graph_hover):
+
+    numdays = 5
+
+    if main_graph_hover!=None:
+        resort_pick = main_graph_hover['points'][0]['pointNumber']
+        resort_data, scrape_time = fetch_data(resort_id=resort_pick)
+
+        layout_individual_bar['title'] = resort_data['MountainName']
+
+        # Create list of dates for x-axis
+        ts = datetime.datetime.strptime(scrape_time, '%Y-%m-%d %H:%M:%S')
+        precip_forecast = resort_data[['day1TOT', 'day2TOT', 'day3TOT', 'day4TOT', 'day5TOT']]
+    else:
+        layout_individual_bar['title'] = 'Select resort in map<br>to see forecast'
+        ts = datetime.datetime.today()
+        precip_forecast = [0,0,0,0,0]
+
+    # Create date list for x-axis
+    ts = ts.replace(hour=0, minute=0, second=0, microsecond=0)
+    date_list = [(ts + datetime.timedelta(days=x)) for x in range(1, numdays+1)]
+
+    trace1 = go.Bar(
+        x=date_list,
+        y=precip_forecast
+        )
+
+    return {
+    'data': [trace1],
+    'layout': layout_individual_bar
+    }
 
 @app.callback(
     Output('resort-bar', 'figure'),
