@@ -39,10 +39,10 @@ def text_label(row):
 def snow_forecast(row):
     return [row[['day1TOT', 'day2TOT', 'day3TOT', 'day4TOT', 'day5TOT']]]
 
+# Import snowfall data from db
 def fetch_data(resort_id='All'):
-    # Import snowfall data from db
     statement = 'SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Mountain_Snow.Base, '
-    statement+= 'Latitude, Longitude, TOTAL, day1D, day1N, day2D, day2N, day3D, '
+    statement+= 'TOTAL, Latitude, Longitude, day1D, day1N, day2D, day2N, day3D, '
     statement+= 'day3N, day4D, day4N, day5D, day5N, day1TOT, day2TOT, day3TOT, day4TOT, '
     statement+= 'day5TOT FROM Mountain_Locations '
     statement+= 'JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id '
@@ -57,6 +57,8 @@ def fetch_data(resort_id='All'):
     # Sort by expected snowfall (greatest to least)
     resort_data = pd.read_sql_query(statement, conn).sort_values(by=['TOTAL'], ascending=False)
 
+    #table_data = resort_data[['MountainName','State','Base','Total','Forecast']]
+
     if resort_id!='All':
         # Select single resort
         resort_data = resort_data.iloc[resort_id]
@@ -64,8 +66,6 @@ def fetch_data(resort_id='All'):
     else:
         # Rename columns for pretty tables
         resort_data.rename(index=str, columns={'TOTAL': 'Total'}, inplace=True)
-
-        #print(resort_data)
 
         # Set variable telling us which states/provinces are included
         stateANDProvince = resort_data.State.unique()
@@ -87,11 +87,9 @@ def fetch_data(resort_id='All'):
 
 # Fetch the data
 resort_data, stateANDProvince, scrape_time, region_vals = fetch_data()
-# print(stateANDProvince[0])
-# print()
-# print(region_options['All'][stateANDProvince[0]])
+
 # Set variables to be displayed in table
-table_data = resort_data[['MountainName','State','Base','Total','Forecast']].copy()
+#table_data = resort_data[['MountainName','State','Base','Total','Forecast']].copy()
 
 # Boostrap CSS
 app.css.append_css({'external_url': 'https://codepen.io/amyoshino/pen/jzXypZ.css'})
@@ -109,7 +107,8 @@ s_conf['marks']={val:{'label':str(val),'style':{'font-size': '1.5em'}} for val i
 layout_table = dict(
     autosize=True,
     height=500,
-    font=dict(color='#191A1A'),
+    width=1000,
+    font=dict(color='#191A1A', size='12'),
     titlefont=dict(color='#191A1A', size='14'),
     margin=dict(
         l=5,
@@ -120,9 +119,7 @@ layout_table = dict(
     hovermode='closest',
     plot_bgcolor='#fffcfc',
     paper_bgcolor='#fffcfc',
-    #legend=dict(font=dict(size=10), orientation='h'),
 )
-layout_table['font-size'] = '12'
 #layout_table['margin-top'] = '10'
 
 layout_map = dict(
@@ -190,21 +187,21 @@ layout_individual_bar = dict(
     ),
     margin=go.layout.Margin(
         l=0,
-        r=5,
+        r=15,
         b=50
     ),
     bargap=.25
 )
 
-def gen_map(table_data, colorbar=False, zoom=2, location='USA-states'):
+def gen_map(resort_data, colorbar=False, zoom=2, location='USA-states'):
     # groupby returns a dictionary mapping the values of the first field
     # 'classification' onto a list of record dictionaries with that
     # classification value.
 
-    if table_data['MountainName'].empty:
-        map_data = resort_data
-    else:
-        map_data = resort_data[resort_data['MountainName'].isin(table_data['MountainName'])]
+    # if resort_data['MountainName'].empty:
+    #     map_data = resort_data
+    # else:
+    #     map_data = resort_data[resort_data['MountainName'].isin(table_data['MountainName'])]
 
     # ## FIX THIS
     # layout_map['mapbox']['center']['lon'] = map_data['Longitude'].mean()
@@ -224,18 +221,18 @@ def gen_map(table_data, colorbar=False, zoom=2, location='USA-states'):
         'data': [{
                 'type': 'scattermapbox',
                 'locationmode':location,
-                'lat': map_data['Latitude'],
-                'lon': map_data['Longitude'],
+                'lat': resort_data['Latitude'],
+                'lon': resort_data['Longitude'],
                 'hoverinfo': 'text',
-                'hovertext': map_data['text'],
+                'hovertext': resort_data['text'],
                 'mode': 'markers',
-                'name': map_data['MountainName'],
+                'name': resort_data['MountainName'],
                 'marker': {
-                    'size':map_data['Total'],
+                    'size':resort_data['Total'],
                     'opacity': 0.5,
                     'colorscale': 'Jet',
                     'reversescale': True,
-                    'color': map_data['Total'],
+                    'color': resort_data['Total'],
                     'colorbar': cb
                 }
         }],
@@ -389,13 +386,14 @@ app.layout = html.Div(
         html.Div(
             [
                 dt.DataTable(
-                    rows=table_data.to_dict('records'),
-                    columns=table_data.columns,
+                    rows=resort_data.to_dict('records'),
+                    columns=resort_data.columns,
                     row_selectable=True,
                     filterable=True,
                     sortable=True,
                     selected_row_indices=[],
-                    id='snow-table'),
+                    id='snow-table',
+                    column_widths = [230,230,230,230]),
             ],
             style = layout_table,
             className='row'
@@ -431,22 +429,21 @@ def set_regions(selected_region):
     Input('value-limit', 'value')])
 def update_snow_table(state_or_province, selected_region, limit):
     resort_data, stateANDProvince, scrape_time, region = fetch_data()
-    #print(resort_data.columns)
-    table_data = resort_data[['MountainName','State','Base','Total','Forecast']]
 
-    # Impose region selection
-    if state_or_province and region!=None:
-        resort_data = resort_data.loc[resort_data['State'].isin(region[selected_region])]
+    # Impose 'region' selection
+    resort_data = resort_data.loc[resort_data['State'].isin(region[selected_region])]
 
-    #print('foo')
-    #print(resort_data)
+    #table_data = resort_data[['MountainName','State','Base','Total','Forecast']]
 
-    if state_or_province and state_or_province!=None:
-        table_data = table_data.loc[table_data['State'].isin(state_or_province)]
+    # Impose 'state' selection
+    if state_or_province:
+        # Check if state(s) are within the selected region (ignore, otherwise)
+        if [i for i in state_or_province if i in region[selected_region]]:
+            resort_data = resort_data.loc[resort_data['State'].isin(state_or_province)]
 
-    table_data = table_data.loc[table_data['State'].isin(region_vals[selected_region])]
+    #table_data = table_data.loc[table_data['State'].isin(region[selected_region])]
 
-    return table_data.iloc[0:limit].to_dict('records')
+    return resort_data.iloc[0:limit].to_dict('records')
 
 # Main graph -> individual graph
 @app.callback(Output('individual-bar', 'figure'),
@@ -493,31 +490,18 @@ def update_resort_bar(rows, selected_row_indices, limit, state_or_province):
 
     numdays = 5
 
+    # Impose table selections
     if len(selected_row_indices) == 0:
         temp_df = pd.DataFrame(rows)
     else:
         temp_df = pd.DataFrame(rows).ix[selected_row_indices, :]
 
-    #bar_data = resort_data[resort_data['MountainName'].isin(temp_df['MountainName'])]
-
-
-    # resort_data, stateANDProvince, scrape_time, region = fetch_data()
-    #
-    # # Impose region selection
-    # if region!=None:
-    #     resort_data = resort_data.loc[resort_data['State'].isin(region[selected_region])]
-
     # Impose state selection
-    if state_or_province and state_or_province!=None:
+    if state_or_province:
         #resort_data = resort_data.loc[resort_data['State'].isin(state_or_province)]
-        title = 'Snow Forecast for '+', '.join(state_or_province)+'<br>'
+        title = 'Snow Forecast for '+', '.join(state_or_province)
     else:
-        title = 'Snow Forecast<br>'
-
-    # # Impose limit from slider
-    # resort_data = resort_data.iloc[0:limit]
-
-    title += ''+str(limit)+' Mountains with the Most Predicted Snowfall<br>'
+        title = str(limit)+' Mountains with the Most Predicted Snowfall'
     layout_state_bar['title'] = title
 
     trace1 = go.Bar(
@@ -542,15 +526,6 @@ def update_forecast_bar(rows, selected_row_indices):
         temp_df = pd.DataFrame(rows)
     else:
         temp_df = pd.DataFrame(rows).ix[selected_row_indices, :]
-
-    # resort_data, stateANDProvince, scrape_time, region = fetch_data()
-    #
-    # if len(selected_row_indices) == 0:
-    #     temp_df = pd.DataFrame(rows)
-    # else:
-    #     temp_df = pd.DataFrame(rows).ix[selected_row_indices, :]
-    #
-    #bar_data = resort_data[resort_data['MountainName'].isin(temp_df['MountainName'])]
 
     graph_title = '{}-Day Forecasted Snowfall'.format(numdays)
 

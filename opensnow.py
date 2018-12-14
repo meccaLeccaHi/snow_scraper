@@ -23,18 +23,6 @@ def make_request_using_cache(url):
         fw1.close()
         return CACHE_DICTION[unique_ident]
 
-# def scrape_base(url):
-#     html = requests.get(url)
-#     soup = BeautifulSoup(html.text, 'html.parser')
-#     report_vals = soup.body.find_all('div',{'class':'snow-report-value'})
-#
-#     if not report_vals:
-#         depth = '--'
-#     else:
-#         depth = report_vals[1].text.strip('"')
-#
-#     return depth
-
 def crawl_forecast(url):
     html = requests.get(url)
     soup = BeautifulSoup(html.text, 'html.parser')
