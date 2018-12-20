@@ -2,11 +2,8 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table_experiments as dt
-import pandas as pd
-import secrets
-from plotly import graph_objs as go
 from dash.dependencies import Input, Output, State, Event
-
+from plotly import graph_objs as go
 import sqlite3
 import secrets
 import pandas as pd
@@ -32,6 +29,7 @@ def text_label(row):
     else:
         tot_str = ': {1} in'
     out_str = '{0}'+tot_str+base_str+'<br>{3}'
+    out_str += '<br><a href="https://opensnow.com/">Open Snow</a>'
     return out_str.format(row.MountainName, row.Total,
                 row.Base, row.State)
 
