@@ -3,7 +3,7 @@ import json
 import secrets
 
 try:
-	cache_file1 = open('cache-google.json', 'r')
+	cache_file1 = open('data/cache-google.json', 'r')
 	cache_contents1 = cache_file1.read()
 	CACHE_DICTION1 = json.loads(cache_contents1)
 	cache_file1.close()
@@ -19,7 +19,7 @@ def make_request_using_cache_Google(url, params):
 	if unique_ident not in CACHE_DICTION1:
 		response = requests.Session().send(prepped)
 		CACHE_DICTION1[unique_ident] = {'data': response.text}
-		cache_file = open('cache-google.json', 'w')
+		cache_file = open('data/cache-google.json', 'w')
 		cache_file.write(json.dumps(CACHE_DICTION1))
 		cache_file.close()
 		return CACHE_DICTION1[unique_ident]['data']
@@ -35,9 +35,9 @@ def get_lat_and_long(ski_name, ski_state):
 	geocoding_results = json.loads(geocode_data)
 	if geocoding_results['status'] == 'OK':
 		information = geocoding_results['results'][0]
-		lattitude = information['geometry']['location']['lat']
+		latitude = information['geometry']['location']['lat']
 		longitude = information['geometry']['location']['lng']
-		return(lattitude, longitude)
+		return(latitude, longitude)
 	else:
 		return(float('nan'), float('nan'))
 

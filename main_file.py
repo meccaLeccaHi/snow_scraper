@@ -26,6 +26,7 @@ def init_db():
             'MountainName' TEXT NOT NULL,
             'State' TEXT NOT NULL,
             'URL' TEXT NOT NULL,
+            'Icon' TEXT NOT NULL,
             'Base' INTEGER,
             'day1D' FLOAT NOT NULL,
             'day1N' FLOAT NOT NULL,
@@ -42,17 +43,9 @@ def init_db():
             'day3TOT' FLOAT NOT NULL,
             'day4TOT' FLOAT NOT NULL,
             'day5TOT' FLOAT NOT NULL,
-            'TOTAL' FLOAT NOT NULL,
+            'Total' FLOAT NOT NULL,
             'Latitude' FLOAT NOT NULL,
             'Longitude' FLOAT NOT NULL
-        );
-    '''
-    cur.execute(statement)
-
-    statement = '''
-        CREATE TABLE 'Timestamp' (
-            'Id' INTEGER,
-            'Time' TEXT NOT NULL
         );
     '''
     cur.execute(statement)
@@ -72,6 +65,7 @@ def insert_data():
             state_name = value['State']
             snowfall = value['Snowfall']
             url = value['URL']
+            icon = value['Icon']
             if snowfall:
                 base_depth = snowfall[3].strip('"')
             else:
@@ -93,12 +87,15 @@ def insert_data():
             lat = google_loc_info[0]
             long = google_loc_info[1]
 
-            insertion = (None, name, state_name, url, base_depth, day1D, day1N, day2D,
+            insertion = (None, name, state_name, url, icon, base_depth, day1D, day1N, day2D,
                          day2N, day3D, day3N, day4D, day4N, day5D, day5N, day1total,
                          day2total, day3total, day4total, day5total, total, lat, long)
             statement = 'INSERT INTO "Mountain_Snow" '
-            statement += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+            statement += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
             cur.execute(statement, insertion)
+            # break
+        # break
+        print(state_name, 'data inserted')
 
     conn.commit()
     conn.close()

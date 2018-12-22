@@ -9,27 +9,34 @@ import secrets
 import pandas as pd
 import datetime
 import json
+import glob
 
 app = dash.Dash(__name__)
 server = app.server
 app.title = 'FreshyFinder'
 
+numdays = 5
+data_dir = 'data/'
+snowboard_img = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Snowboarding.jpg/250px-Snowboarding.jpg'
+
 # Load state data for controls
-with open('cache-geo.json') as json_data:
+with open(data_dir+'cache-geo.json') as json_data:
     region_options = json.load(json_data)
 
 # Create text label for each resort on the map
 def text_label(row):
-    if row.Base!=row.Base:
-        base_str = ''
-    else:
+
+    if row.Base:
         base_str = '</br>{2}" base'
+    else:
+        base_str = ''
     if row.Total==0.0:
         tot_str = ''
     else:
         tot_str = ': {1} in'
     out_str = '{0}'+tot_str+base_str+'<br>{3}'
-    out_str += '<br><a href="https://opensnow.com/">Open Snow</a>'
+    #out_str += '<br><a href="{4}">Link</a>' # , row.URL
+    # out_str += '<br><img src="{5}" alt="Resort Logo">' # hovertext
     return out_str.format(row.MountainName, row.Total,
                 row.Base, row.State)
 
@@ -39,31 +46,29 @@ def snow_forecast(row):
 
 # Import snowfall data from db
 def fetch_data(resort_id='All'):
-    statement = 'SELECT Mountain_Snow.MountainName, Mountain_Snow.State, Mountain_Snow.Base, '
-    statement+= 'TOTAL, Latitude, Longitude, day1D, day1N, day2D, day2N, day3D, '
+
+    # Select newest database
+    date_list = [filename[14:24] for filename in glob.glob("data/*.db")]
+    scrape_date = sorted(date_list, key=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d'))[-1]
+    db_name = data_dir+'snowfall_'+scrape_date+'.db'
+    conn = sqlite3.connect(db_name)
+    #print('db:', db_name)
+
+    statement = 'SELECT MountainName, State, Base, URL, Icon,'
+    statement+= 'Total, Latitude, Longitude, day1D, day1N, day2D, day2N, day3D, '
     statement+= 'day3N, day4D, day4N, day5D, day5N, day1TOT, day2TOT, day3TOT, day4TOT, '
-    statement+= 'day5TOT FROM Mountain_Locations '
-    statement+= 'JOIN Mountain_Snow ON Mountain_Locations.Id=Mountain_Snow.Id '
-
-    conn = sqlite3.connect('snowfall.db')
-
-    # Read when the database was last updated
-    cur = conn.cursor()
-    cur.execute('SELECT Time FROM Timestamp ORDER BY ID DESC LIMIT 1')
-    scrape_time = cur.fetchone()[0]
+    statement+= 'day5TOT FROM Mountain_Snow'
 
     # Sort by expected snowfall (greatest to least)
-    resort_data = pd.read_sql_query(statement, conn).sort_values(by=['TOTAL'], ascending=False)
-
-    #table_data = resort_data[['MountainName','State','Base','Total','Forecast']]
+    resort_data = pd.read_sql_query(statement, conn).sort_values(by=['Total'], ascending=False)
 
     if resort_id!='All':
         # Select single resort
         resort_data = resort_data.iloc[resort_id]
-        return(resort_data, scrape_time)
+        return(resort_data, scrape_date)
     else:
-        # Rename columns for pretty tables
-        resort_data.rename(index=str, columns={'TOTAL': 'Total'}, inplace=True)
+        # # Rename columns for pretty tables
+        # resort_data.rename(index=str, columns={'TOTAL': 'Total'}, inplace=True)
 
         # Set variable telling us which states/provinces are included
         stateANDProvince = resort_data.State.unique()
@@ -81,13 +86,10 @@ def fetch_data(resort_id='All'):
         # Close connection to database
         conn.close()
 
-        return(resort_data, stateANDProvince, scrape_time, region_vals)
+        return(resort_data, stateANDProvince, scrape_date, region_vals)
 
 # Fetch the data
-resort_data, stateANDProvince, scrape_time, region_vals = fetch_data()
-
-# Set variables to be displayed in table
-#table_data = resort_data[['MountainName','State','Base','Total','Forecast']].copy()
+resort_data, stateANDProvince, scrape_date, region_vals = fetch_data()
 
 # Boostrap CSS
 app.css.append_css({'external_url': 'https://codepen.io/amyoshino/pen/jzXypZ.css'})
@@ -245,25 +247,25 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.H1(children='FreshyFinder'),
-                        html.Div(children='Last Updated: {}'.format(scrape_time),
+                        html.Div(children='Last Updated: {}'.format(scrape_date),
                                 style = {'fontSize': 14,
                                         'padding-top': 0}
                         )
                     ],
                     className='three columns'
                 ),
-                html.Img(
-                        src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Snowboarding.jpg/250px-Snowboarding.jpg',
-                        className='three columns',
-                        style={
-                            'height': '16%',
-                            'width': '16%',
-                            'float': 'right',
-                            'position': 'relative',
-                            'padding-top': 10,
-                            'padding-right': 30
-                        },
-                )
+                # html.Img(
+                #         src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Snowboarding.jpg/250px-Snowboarding.jpg',
+                #         className='three columns',
+                #         style={
+                #             'height': '16%',
+                #             'width': '16%',
+                #             'float': 'right',
+                #             'position': 'relative',
+                #             'padding-top': 10,
+                #             'padding-right': 30
+                #         },
+                # )
             ], className='row'
         ),
 
@@ -282,6 +284,23 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     [
+                        html.A([
+                            html.Img(
+                                id='resort_logo',
+                                # src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Snowboarding.jpg/250px-Snowboarding.jpg',
+                                style={
+                                    'height': '50%',
+                                    'width': '50%',
+                                    'float': 'center',
+                                    #'position': 'relative',
+                                    # 'padding-top': 10,
+                                    #'padding-right': 30,
+                                    'padding-left': 30
+                                }),
+                        ],
+                        id='resort_link',
+                        href='https://www.google.com'
+                        ),
                         dcc.Graph(id='individual-bar',
                                 style={'margin-left': '5',
                                     'margin-right': '5',
@@ -333,6 +352,12 @@ app.layout = html.Div(
                     style={'margin-left': '10', 'margin-right': '10',
                         'margin-bottom':'10'}
                     ),
+            ], className='row'
+        ),
+
+        # Resort number slider
+        html.Div(
+            [
                 html.Div([
                     html.P('Number of resorts to include:'),
                     dcc.Slider(
@@ -349,22 +374,22 @@ app.layout = html.Div(
                         'margin-bottom':'10','margin-left': '5%',
                         'margin-right':'5%'}
                 ),
-                html.Div([
-                    html.P('Number of days to forecast:'),
-                    dcc.Slider(
-                        id='value-days',
-                        min=s_conf['min'],
-                        max=s_conf['max'],
-                        value=s_conf['value'],
-                        marks=s_conf['marks'],
-                        updatemode='drag'
-                        )
-                    ],
-                    className='five columns',
-                    style={'display': 'inline-block','margin': 'auto', 'width': '30%',
-                        'margin-bottom':'10','margin-left': '5%',
-                        'margin-right':'5%'}
-                )
+                # html.Div([
+                #     html.P('Number of days to forecast:'),
+                #     dcc.Slider(
+                #         id='value-days',
+                #         min=s_conf['min'],
+                #         max=s_conf['max'],
+                #         value=s_conf['value'],
+                #         marks=s_conf['marks'],
+                #         updatemode='drag'
+                #         )
+                #     ],
+                #     className='five columns',
+                #     style={'display': 'inline-block','margin': 'auto', 'width': '30%',
+                #         'margin-bottom':'10','margin-left': '5%',
+                #         'margin-right':'5%'}
+                # )
             ], className='row'
         ),
 
@@ -426,12 +451,10 @@ def set_regions(selected_region):
     Input('region-value', 'value'),
     Input('value-limit', 'value')])
 def update_snow_table(state_or_province, selected_region, limit):
-    resort_data, stateANDProvince, scrape_time, region = fetch_data()
+    resort_data, stateANDProvince, scrape_date, region = fetch_data()
 
     # Impose 'region' selection
     resort_data = resort_data.loc[resort_data['State'].isin(region[selected_region])]
-
-    #table_data = resort_data[['MountainName','State','Base','Total','Forecast']]
 
     # Impose 'state' selection
     if state_or_province:
@@ -439,33 +462,59 @@ def update_snow_table(state_or_province, selected_region, limit):
         if [i for i in state_or_province if i in region[selected_region]]:
             resort_data = resort_data.loc[resort_data['State'].isin(state_or_province)]
 
-    #table_data = table_data.loc[table_data['State'].isin(region[selected_region])]
+    resort_data = resort_data.sort_values(by=['Total'], ascending=False)
+    resort_data = resort_data.iloc[0:limit]
 
-    return resort_data.iloc[0:limit].to_dict('records')
+    def hotlinker(url_string):
+        return '<a href="{}">{}</a>'.format(url_string,url_string)
+    resort_data['URL'] = resort_data['URL'].apply(hotlinker)
+
+    return resort_data.to_dict('records')
+
+# Main graph -> resort icon
+@app.callback(
+    dash.dependencies.Output('resort_logo', 'src'),
+    [dash.dependencies.Input('snow-map', 'hoverData')])
+def update_image_src(main_graph_hover):
+    if main_graph_hover!=None:
+        resort_pick = main_graph_hover['points'][0]['pointNumber']
+        resort_data, scrape_date = fetch_data(resort_id=resort_pick)
+        return resort_data['Icon']
+    else:
+        return snowboard_img
+
+# Main graph -> resort link
+@app.callback(
+    dash.dependencies.Output('resort_link', 'href'),
+    [dash.dependencies.Input('snow-map', 'hoverData')])
+def update_image_src(main_graph_hover):
+    if main_graph_hover!=None:
+        resort_pick = main_graph_hover['points'][0]['pointNumber']
+        resort_data, scrape_date = fetch_data(resort_id=resort_pick)
+        return resort_data['URL']
+    else:
+        return 'https://opensnow.com/'
 
 # Main graph -> individual graph
 @app.callback(Output('individual-bar', 'figure'),
               [Input('snow-map', 'hoverData')])
 def update_individual_bar(main_graph_hover):
 
-    numdays = 5
-
     if main_graph_hover!=None:
         resort_pick = main_graph_hover['points'][0]['pointNumber']
-        resort_data, scrape_time = fetch_data(resort_id=resort_pick)
+        resort_data, scrape_date = fetch_data(resort_id=resort_pick)
 
         layout_individual_bar['title'] = resort_data['MountainName']
 
         # Create list of dates for x-axis
-        ts = datetime.datetime.strptime(scrape_time, '%Y-%m-%d %H:%M:%S')
+        ts = datetime.datetime.strptime(scrape_date, '%Y-%m-%d')
         precip_forecast = resort_data[['day1TOT', 'day2TOT', 'day3TOT', 'day4TOT', 'day5TOT']]
     else:
-        layout_individual_bar['title'] = 'Select resort in map<br>to see forecast'
+        layout_individual_bar['title'] = 'Select resort<br>to see forecast'
         ts = datetime.datetime.today()
         precip_forecast = [0,0,0,0,0]
 
     # Create date list for x-axis
-    ts = ts.replace(hour=0, minute=0, second=0, microsecond=0)
     date_list = [(ts + datetime.timedelta(days=x)) for x in range(1, numdays+1)]
 
     trace1 = go.Bar(
@@ -485,8 +534,6 @@ def update_individual_bar(main_graph_hover):
      Input('value-limit', 'value'),
      Input('state-value', 'value')])
 def update_resort_bar(rows, selected_row_indices, limit, state_or_province):
-
-    numdays = 5
 
     # Impose table selections
     if len(selected_row_indices) == 0:
@@ -518,8 +565,6 @@ def update_resort_bar(rows, selected_row_indices, limit, state_or_province):
      Input('snow-table', 'selected_row_indices')])
 def update_forecast_bar(rows, selected_row_indices):
 
-    numdays = 5
-
     if len(selected_row_indices) == 0:
         temp_df = pd.DataFrame(rows)
     else:
@@ -527,8 +572,7 @@ def update_forecast_bar(rows, selected_row_indices):
 
     graph_title = '{}-Day Forecasted Snowfall'.format(numdays)
 
-    ts = datetime.datetime.strptime(scrape_time, '%Y-%m-%d %H:%M:%S')
-    ts = ts.replace(hour=0, minute=0, second=0, microsecond=0)
+    ts = datetime.datetime.strptime(scrape_date, '%Y-%m-%d')
 
     # Create list of dates for x-axis
     date_list = [(ts + datetime.timedelta(days=x)) for x in range(1, numdays+1)]
@@ -555,8 +599,7 @@ def update_forecast_bar(rows, selected_row_indices):
             tickformat='%m/%d',
             tickangle=45
         )
-    )
-    }
+    )}
 
 if __name__ == '__main__':
     app.run_server(debug=True)
