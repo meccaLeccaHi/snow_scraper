@@ -4,7 +4,7 @@ FreshyFinder: Illegitimate son of FreshyMap
 
 This software scrapes weather data from every resort in North America (provided by the good folks at [opensnow.com](https://opensnow.com)). It also provides a highly-interactive visualization tool, "FreshyFinder", to search the scraped snowfall data in anticipation of your next getaway. This app was initially an attempt to replace the late, great [FreshyMap.com](https://en.wikipedia.org/wiki/FreshyMap).
 
-![](https://en.wikipedia.org/wiki/FreshyMap#/media/File:FreshyMapshot.jpg)
+![](https://upload.wikimedia.org/wikipedia/en/3/3f/FreshyMapshot.jpg)
 
 ### Built With:
 This app use a [Python client library](https://github.com/googlemaps/google-maps-services-python) for Google Maps API Web Services to look-up the lat. and long. of each resort. Fortunately, it's super easy to install, just run:
