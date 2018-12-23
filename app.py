@@ -120,7 +120,7 @@ layout_table = dict(
     plot_bgcolor='#fffcfc',
     paper_bgcolor='#fffcfc',
 )
-layout_table['padding-left']=100
+layout_table['padding-left']=50
 
 # Map configuration
 layout_map = dict(
