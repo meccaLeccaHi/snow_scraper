@@ -436,17 +436,17 @@ def update_snow_table(state_or_province, selected_region, limit):
 
     return resort_data.to_dict('records')
 
-# Map
-@app.callback(
-    Output('snow-map', 'figure'),
-    [Input('snow-table', 'rows'),
-     Input('snow-table', 'selected_row_indices')])
-def map_selection(rows, selected_row_indices):
-    aux = pd.DataFrame(rows)
-    temp_df = aux.ix[selected_row_indices, :]
-    if len(selected_row_indices) == 0:
-        return gen_map(aux)
-    return gen_map(temp_df)
+# # Map
+# @app.callback(
+#     Output('snow-map', 'figure'),
+#     [Input('snow-table', 'rows'),
+#      Input('snow-table', 'selected_row_indices')])
+# def map_selection(rows, selected_row_indices):
+#     aux = pd.DataFrame(rows)
+#     temp_df = aux.ix[selected_row_indices, :]
+#     if len(selected_row_indices) == 0:
+#         return gen_map(aux)
+#     return gen_map(temp_df)
 
 # Map -> resort icon
 @app.callback(
@@ -454,8 +454,10 @@ def map_selection(rows, selected_row_indices):
     [dash.dependencies.Input('snow-map', 'hoverData')])
 def update_image_src(main_graph_hover):
     if main_graph_hover!=None:
-        resort_pick = main_graph_hover['points'][0]['pointNumber']
-        return resort_data['Icon'].iloc[resort_pick]
+        str_end = main_graph_hover['points'][0]['hovertext'].find(':')
+        resort_name = main_graph_hover['points'][0]['hovertext'][:str_end]
+        name_bool = resort_data['MountainName']==resort_name
+        return resort_data['Icon'].loc[name_bool]
     else:
         return snowboard_img
 
@@ -465,8 +467,10 @@ def update_image_src(main_graph_hover):
     [dash.dependencies.Input('snow-map', 'hoverData')])
 def update_image_src(main_graph_hover):
     if main_graph_hover!=None:
-        resort_pick = main_graph_hover['points'][0]['pointNumber']
-        return resort_data['URL'].iloc[resort_pick]
+        str_end = main_graph_hover['points'][0]['hovertext'].find(':')
+        resort_name = main_graph_hover['points'][0]['hovertext'][:str_end]
+        name_bool = resort_data['MountainName']==resort_name
+        return resort_data['URL'].loc[name_bool]
     else:
         return 'https://opensnow.com/'
 
@@ -476,14 +480,16 @@ def update_image_src(main_graph_hover):
 def update_individual_bar(main_graph_hover):
 
     if main_graph_hover!=None:
-        resort_pick = main_graph_hover['points'][0]['pointNumber']
-        graph_data = resort_data.iloc[resort_pick]
-
-        layout_indiv_bar['title'] = graph_data['MountainName']
+        str_end = main_graph_hover['points'][0]['hovertext'].find(':')
+        resort_name = main_graph_hover['points'][0]['hovertext'][:str_end]
+        name_bool = resort_data['MountainName']==resort_name
+        graph_data = resort_data.loc[name_bool]
+        layout_indiv_bar['title'] = resort_name
 
         # Create list of dates for x-axis
         ts = datetime.datetime.strptime(scrape_date, '%Y-%m-%d')
-        precip_forecast = graph_data[['day1TOT', 'day2TOT', 'day3TOT', 'day4TOT', 'day5TOT']]
+        precip_forecast = graph_data['Forecast'].tolist()[0][0]
+
     else:
         layout_indiv_bar['title'] = 'Select resort<br>to see forecast'
         ts = datetime.datetime.today()
@@ -491,11 +497,10 @@ def update_individual_bar(main_graph_hover):
 
     # Create date list for x-axis
     date_list = [(ts + datetime.timedelta(days=x)) for x in range(1, numdays+1)]
-
     trace1 = go.Bar(
-        x=date_list,
-        y=precip_forecast
-        )
+         x=date_list,
+         y=precip_forecast
+         )
 
     return {
     'data': [trace1],
