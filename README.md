@@ -18,7 +18,7 @@ The front end was made using [Plotly Dash](https://dash.plot.ly/). I relied on s
 ### Keys
 This app also uses [MapBox](https://www.mapbox.com/) for the map, which requires a user-specific [access token](https://www.mapbox.com/help/how-access-tokens-work/) to use. 
 In addition, each Google Maps Web Service request requires an API key or client ID. API keys are freely available with a Google Account at https://developers.google.com/console. The type of API key you need is a *Server* key.
-Both keys will need to be placed in a file called secrets.py, which is placed in `/snow_scraper`. It should be organized as follows:
+Both keys will need to be placed in a file called secrets.py, which is placed in `/snow_scraper`. It should be organized as follows (with the single quotes around the strings):
 
 #### secrets.py
 ```
@@ -27,12 +27,12 @@ google_places_key = 'API_KEY_HERE'
 ```
 
 ### To run:
-1. Install requirements:
->`$ pip install -r requirements.txt` (or see 'requirements' below)
-1. Scrape 'opensnow.com':
->`$ python main_file.py`
-1. Visualize via app:
->`$ python app.py`
+1. Install requirements:  
+`$ pip install -r requirements.txt` (or see 'requirements' below)
+1. Scrape 'opensnow.com':  
+`$ python main_file.py`
+1. Visualize via app:  
+`$ python app.py`
 1. Enjoy!
 
 Dependencies:
