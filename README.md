@@ -4,7 +4,7 @@ FreshyFinder: Illegitimate son of FreshyMap
 
 This software scrapes weather data from every resort in North America (provided by the good folks at [opensnow.com](https://opensnow.com)). It also provides a highly-interactive visualization tool, "FreshyFinder", to search the scraped snowfall data in anticipation of your next getaway. This app was initially an attempt to replace the late, great [FreshyMap.com](https://en.wikipedia.org/wiki/FreshyMap).
 
-[INSERT SCREENSHOT]
+![Freshy Finder screenshot](freshy_finder_screenshot.png)
 
 [ADD HEROKU LINK HERE]
 
