@@ -21,19 +21,22 @@ In addition, each Google Maps Web Service request requires an API key or client 
 Both keys will need to be placed in a file called secrets.py, which is placed in `/snow_scraper`. It should be organized as follows:
 
 #### secrets.py
+```
 mapbox_key = 'API_KEY_HERE'
 google_places_key = 'API_KEY_HERE'
+```
 
 ### To run:
 1. Install requirements:
-`$ pip install -r requirements.txt` (or see 'requirements' below)
+>`$ pip install -r requirements.txt` (or see 'requirements' below)
 1. Scrape 'opensnow.com':
-`$ python main_file.py`
+>`$ python main_file.py`
 1. Visualize via app:
-`$ python app.py`
+>`$ python app.py`
 1. Enjoy!
 
 Dependencies:
+```
 pip install numpy
 pip install pandas
 pip install dash
@@ -43,3 +46,4 @@ pip install dash-table
 pip install dash-table-experiments
 pip install -U googlemaps
 pip install beautifulsoup4
+```
