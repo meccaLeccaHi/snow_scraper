@@ -272,7 +272,7 @@ app.layout = html.Div(
                                 style={
                                     'height': '50%',
                                     'width': '50%',
-                                    'padding-left': 130,
+                                    'padding-left': 135,
                                 }
                             ),
                         ],
