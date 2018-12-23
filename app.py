@@ -488,7 +488,11 @@ def update_individual_bar(main_graph_hover):
 
         # Create list of dates for x-axis
         ts = datetime.datetime.strptime(scrape_date, '%Y-%m-%d')
-        precip_forecast = graph_data['Forecast'].tolist()[0][0]
+        precip_forecast = graph_data['Forecast'].tolist()
+        if precip_forecast:
+            precip_forecast = precip_forecast[0][0]
+        else:
+            precip_forecast = [0,0,0,0,0]
 
     else:
         layout_indiv_bar['title'] = 'Select resort<br>to see forecast'
