@@ -14,7 +14,6 @@ import glob
 app = dash.Dash(__name__)
 server = app.server
 app.title = 'FreshyFinder'
-
 numdays = 5
 data_dir = 'data/'
 snowboard_img = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Snowboarding.jpg/250px-Snowboarding.jpg'
@@ -108,7 +107,7 @@ layout_slider['marks'] = {
 layout_table = dict(
     autosize=True,
     height=500,
-    width=1000,
+    width=900,
     font=dict(color='#191A1A', size='12'),
     titlefont=dict(color='#191A1A', size='14'),
     margin=dict(
@@ -121,6 +120,7 @@ layout_table = dict(
     plot_bgcolor='#fffcfc',
     paper_bgcolor='#fffcfc',
 )
+layout_table['padding-left']=100
 
 # Map configuration
 layout_map = dict(
@@ -158,19 +158,20 @@ layout_indiv_bar = dict(
     xaxis=dict(
         showticklabels=True,
         tickangle=45,
+        automargin=True,
         tickformat='%m/%d',
         tickmode='linear',
     ),
     yaxis= dict(
         title='Inches',
-        #automargin=True,
+        automargin=True,
         rangemode='nonnegative',
         side='right'
     ),
-    margin=go.layout.Margin(
-        #r=50,
-        b=35
-    ),
+    # margin=go.layout.Margin(
+    #     #r=50,
+    #     b=35
+    # ),
     bargap=.25
 )
 
@@ -271,7 +272,7 @@ app.layout = html.Div(
                                 style={
                                     'height': '50%',
                                     'width': '50%',
-                                    'padding-left': 145,
+                                    'padding-left': 130,
                                 }
                             ),
                         ],

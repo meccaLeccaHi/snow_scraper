@@ -4,7 +4,8 @@ FreshyFinder: Illegitimate son of FreshyMap
 
 This software scrapes weather data from every resort in North America (provided by the good folks at [opensnow.com](https://opensnow.com)). It also provides a highly-interactive visualization tool, "FreshyFinder", to search the scraped snowfall data in anticipation of your next getaway. This app was initially an attempt to replace the late, great [FreshyMap.com](https://en.wikipedia.org/wiki/FreshyMap).
 
-![](https://upload.wikimedia.org/wikipedia/en/3/3f/FreshyMapshot.jpg)
+[INSERT SCREENSHOT]
+[ADD HEROKU LINK HERE]
 
 ### Built With:
 This app use a [Python client library](https://github.com/googlemaps/google-maps-services-python) for Google Maps API Web Services to look-up the lat. and long. of each resort. Fortunately, it's super easy to install, just run:
@@ -12,12 +13,6 @@ This app use a [Python client library](https://github.com/googlemaps/google-maps
 
 The front end was made using [Plotly Dash](https://dash.plot.ly/). I relied on several sources of information including:
 - Plotly Dash Tutorials by [Adriano M. Yoshino](https://github.com/amyoshino)
-1. https://www.youtube.com/watch?v=yfWJXkySfe0
-1. https://github.com/amyoshino/DASH_Tutorial_ARGO_Labs
-1. https://medium.com/a-r-g-o/using-plotlys-dash-to-deliver-public-sector-decision-support-dashboards-ac863fa829fb
-1. https://youtu.be/lu0PtsMor4E
-1. https://github.com/amyoshino/Dash_Tutorial_Series
-
 - As well as the highly-instructive [examples](https://dash.plot.ly/gallery) provided by Plotly itself.
 
 ### Keys
