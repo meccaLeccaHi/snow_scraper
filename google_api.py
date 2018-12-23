@@ -10,7 +10,6 @@ try:
 except:
 	CACHE_DICTION1 = {}
 
-
 def make_request_using_cache_Google(url, params):
 	req = requests.Request(method = 'GET', url = url,
 							params = sorted(params.items()))

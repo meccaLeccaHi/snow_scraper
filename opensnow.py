@@ -17,8 +17,10 @@ def crawl_state(url=base+'/state/MT'):
 
     title = state_soup.find("meta",  property="og:title")
     if title['content'].strip()=='Page Not Found':
-        print('No page for',url)# Get state name
+        # No page for you
+        print('No page for',url)
     else:
+        # Get state name
         state_name = state_soup.find(class_='title').get_text()
         print("Scraping 'State name': {}".format(state_name))
 
@@ -43,8 +45,9 @@ def crawl_state(url=base+'/state/MT'):
         table_scrape = big_column.find_all('table', {'class': 'tiny-graph'})
         forecasts = []
         for table in table_scrape:
-            forecast_vals = [average_string(val['value']) for val in table.find_all('span') if val.has_attr('value')]
-            forecasts.append(forecast_vals)
+            forecasts.append(
+            [average_string(val['value']) for val in table.find_all('span') if val.has_attr('value')]
+            )
         print("Scraping 'Forecasts': {}".format(forecasts))
 
         # Get forecast dates
@@ -52,16 +55,20 @@ def crawl_state(url=base+'/state/MT'):
             dates_scrape = table_scrape[0].find_all('span', {'class': 'day'})
             date_nums = [int(date.getText().strip()) for date in dates_scrape][:5]
 
-            yday = date_nums[0]-1
             dates = [item for item in date_nums for i in range(2)]
-            if dt.datetime.now().hour>=12:
+            if len(dates)!=10:
+                print('FIGURE OUT WHAT TO DO WHEN len(dates)!=10, dummy!')
+                yday = date_nums[0]-1
                 dates = [yday]+dates
-            else:
-                dates = [yday,yday]+dates
         else:
             dates = []
 
-        ## Insert test for equal length of dates and forecast_vals[0]
+        if forecasts:
+            # Test for equal length of dates and forecasts
+            if len(dates)!=len(forecasts[0]):
+                except_string = 'Length of dates ({0}) and number of forecasts[0] ({1}) do not match.'
+                except_string = except_string.format(len(dates),len(forecasts[0]))
+                raise Exception(except_string)
 
         # Get base (inches) for each resort
         snowfall = []
@@ -90,7 +97,6 @@ def crawl_state(url=base+'/state/MT'):
     return state_dict
 
 def crawl_main():
-    base = 'https://opensnow.com'
     # Load state geo data
     with open('data/cache-geo.json') as json_data:
         region_options = json.load(json_data)
@@ -101,8 +107,6 @@ def crawl_main():
         abbrev = region_options['All'][state]['results'][0]['address_components'][0]['short_name']
         url = base+'/state/'+abbrev
         data.append(crawl_state(url))
-    #     break
-
     return data
 
 # print(crawl_state('https://opensnow.com/state/CO'))

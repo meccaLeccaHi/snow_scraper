@@ -43,7 +43,7 @@ def init_db():
             'day3TOT' FLOAT NOT NULL,
             'day4TOT' FLOAT NOT NULL,
             'day5TOT' FLOAT NOT NULL,
-            'Total' FLOAT NOT NULL,
+            'TotalExpected' FLOAT NOT NULL,
             'Latitude' FLOAT NOT NULL,
             'Longitude' FLOAT NOT NULL
         );
@@ -71,16 +71,16 @@ def insert_data():
             else:
                 base_depth = ''
 
+            print(value)
             dates = value['Dates']
             forecast = value['Forecast']
-            sel_forecast = [forecast[ind] for ind in range(len(dates)) if dates[ind]>=tomm]
-            day1D,day1N,day2D,day2N,day3D,day3N,day4D,day4N,day5D,day5N = sel_forecast
+            day1D,day1N,day2D,day2N,day3D,day3N,day4D,day4N,day5D,day5N = forecast
             day1total = day1D+day1N
             day2total = day2D+day2N
             day3total = day3D+day3N
             day4total = day4D+day4N
             day5total = day5D+day5N
-            total = sum(sel_forecast)
+            total = sum(forecast)
 
             # Fetch lat. and long. from google
             google_loc_info = google_api.get_lat_and_long(name, state_name)
@@ -93,7 +93,7 @@ def insert_data():
             statement = 'INSERT INTO "Mountain_Snow" '
             statement += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
             cur.execute(statement, insertion)
-            # break
+            # break # When testing, uncomment these breaks
         # break
         print(state_name, 'data inserted')
 
