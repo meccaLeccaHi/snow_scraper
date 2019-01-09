@@ -17,19 +17,18 @@ The front end was made using [Plotly Dash](https://dash.plot.ly/). I relied on s
 - Plotly Dash Tutorials by [Adriano M. Yoshino](https://github.com/amyoshino)
 - Highly-instructive [examples](https://dash.plot.ly/gallery) provided by Plotly itself.
 
-
-### Keys
-- This app also uses [MapBox](https://www.mapbox.com/) for the map, which requires a user-specific [access token](https://www.mapbox.com/help/how-access-tokens-work/) to use. 
-- In addition, each Google Maps Web Service request requires an API key or client ID. API keys are freely available with a Google Account at https://developers.google.com/console. The type of API key you need is a *Server* key.
-*Both keys will need to be placed in a file called secrets.py*, which is placed in the `/snow_scraper` folder. It should be organized as follows (with the single quotes around the strings):
-
-    #### secrets.py
-    ```
-    mapbox_key = 'API_KEY_HERE'
-    google_places_key = 'API_KEY_HERE'
-    ```
+#### secrets.py
+```
+mapbox_key = 'API_KEY_HERE'
+google_places_key = 'API_KEY_HERE'
+```
 
 ### To run:
+1. Create virtual environment
+- Navigate to empty folder in local directory, then:
+`$ pip install virtualenv` (If not installed already)
+`$ virtualenv venv`
+`$ source venv/bin/activate` (Later, you can run `deactivate` to deactivate)
 1. Install requirements:  
 `$ pip install -r requirements.txt` (or see 'requirements' below)
 1. Scrape fresh snow data:  
