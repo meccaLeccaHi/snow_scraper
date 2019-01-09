@@ -125,7 +125,7 @@ layout_table = dict(
 	plot_bgcolor='#fffcfc',
 	paper_bgcolor='#fffcfc',
 )
-layout_table['padding-left']='10%'
+layout_table['padding-left']='6%'
 
 # Map configuration
 layout_map = dict(
@@ -399,6 +399,7 @@ app.layout = html.Div(
 			[
 				html.Div(
 					[
+						html.P(''),
 						html.P('Developed by - ', style = {'display': 'inline'}),
 						html.A('Adam Jones', href = 'http://www.adam-p-jones.com'),
 						html.Br(),
