@@ -23,11 +23,11 @@ The front end was made using [Plotly Dash](https://dash.plot.ly/). I relied on s
 - In addition, each Google Maps Web Service request requires an API key or client ID. API keys are freely available with a Google Account at https://developers.google.com/console. The type of API key you need is a *Server* key.
 *Both keys will need to be placed in a file called secrets.py*, which is placed in the `/snow_scraper` folder. It should be organized as follows (with the single quotes around the strings):
 
-#### secrets.py
-```
-mapbox_key = 'API_KEY_HERE'
-google_places_key = 'API_KEY_HERE'
-```
+    #### secrets.py
+    ```
+    mapbox_key = 'API_KEY_HERE'
+    google_places_key = 'API_KEY_HERE'
+    ```
 
 ### To run:
 1. Install requirements:  
