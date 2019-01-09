@@ -8,13 +8,15 @@ This software scrapes weather data from every resort in North America (provided 
 
 [ADD HEROKU LINK HERE]
 
+
 ### Built With:
-This app use a [Python client library](https://github.com/googlemaps/google-maps-services-python) for Google Maps API Web Services to look-up the lat. and long. of each resort. Fortunately, it's super easy to install:
+This app use a [Python client library](https://github.com/googlemaps/google-maps-services-python) for Google Maps API Web Services to look-up the lat. and long. of each resort. Fortunately, it's super easy to install:  
 `$ pip install -U googlemaps`
 
 The front end was made using [Plotly Dash](https://dash.plot.ly/). I relied on several sources of information including:
 - Plotly Dash Tutorials by [Adriano M. Yoshino](https://github.com/amyoshino)
 - Highly-instructive [examples](https://dash.plot.ly/gallery) provided by Plotly itself.
+
 
 ### Keys
 - This app also uses [MapBox](https://www.mapbox.com/) for the map, which requires a user-specific [access token](https://www.mapbox.com/help/how-access-tokens-work/) to use. 
@@ -30,7 +32,7 @@ google_places_key = 'API_KEY_HERE'
 ### To run:
 1. Install requirements:  
 `$ pip install -r requirements.txt` (or see 'requirements' below)
-1. Scrape snow data:  
+1. Scrape fresh snow data:  
 `$ python main_file.py`
 1. Visualize via app:  
 `$ python app.py`

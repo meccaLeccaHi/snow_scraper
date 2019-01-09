@@ -4,8 +4,13 @@ from bs4 import BeautifulSoup
 import re
 import datetime as dt
 import json
+import sys
 
 base = 'https://opensnow.com'
+
+def average_string(string_input):
+    hi_low = [float(re.findall('\d+',i)[0]) for i in string_input.split('-')]
+    return sum(hi_low)/2
 
 def crawl_state(url=base+'/state/MT'):
 
@@ -21,7 +26,7 @@ def crawl_state(url=base+'/state/MT'):
         print('No page for',url)
     else:
         # Get state name
-        state_name = state_soup.find(class_='title').get_text()
+        state_name = state_soup.find('h1', {'class': 'title'}).get_text()
         print("Scraping 'State name': {}".format(state_name))
 
         # Select page region to use
@@ -38,37 +43,40 @@ def crawl_state(url=base+'/state/MT'):
         urls = [base+resort.a['href'] for resort in resorts_scrape]
         print("Scraping 'urls': {}".format(urls))
 
-        # Get forecast for each resort
-        def average_string(string_input):
-            hi_low = [float(re.findall('\d+',i)[0]) for i in string_input.split('-')]
-            return sum(hi_low)/2
+        # Scrape table
         table_scrape = big_column.find_all('table', {'class': 'tiny-graph'})
-        forecasts = []
-        for table in table_scrape:
-            forecasts.append(
-            [average_string(val['value']) for val in table.find_all('span') if val.has_attr('value')]
-            )
-        print("Scraping 'Forecasts': {}".format(forecasts))
 
         # Get forecast dates
         if table_scrape:
             dates_scrape = table_scrape[0].find_all('span', {'class': 'day'})
-            date_nums = [int(date.getText().strip()) for date in dates_scrape][:5]
-
+            date_nums = [int(date.getText().strip()) for date in dates_scrape]
             dates = [item for item in date_nums for i in range(2)]
-            if len(dates)!=10:
-                print('FIGURE OUT WHAT TO DO WHEN len(dates)!=10, dummy!')
-                yday = date_nums[0]-1
-                dates = [yday]+dates
+
         else:
+            print('No dates found for {}'.format(state_name))
             dates = []
 
+        # Get forecast for each resort
+        forecasts = []
+        for table in table_scrape:
+            daily_snow = table.find_all('span')
+            forecast_n = [average_string(val['value']) for val in daily_snow if val.has_attr('value')]
+            if len(forecast_n)==(len(dates)+1):
+                forecast_n = forecast_n[-len(dates):]
+            forecasts.append(forecast_n)
+
+        print("Scraping 'Forecasts': {}".format(forecasts))
+
         if forecasts:
-            # Test for equal length of dates and forecasts
+            # Test for equivalence of length of 'dates' and 'forecasts'
             if len(dates)!=len(forecasts[0]):
-                except_string = 'Length of dates ({0}) and number of forecasts[0] ({1}) do not match.'
-                except_string = except_string.format(len(dates),len(forecasts[0]))
-                raise Exception(except_string)
+                warn_string = 'Length of dates ({0}) and number of forecasts ({1}) do not match.'
+                warn_string = warn_string.format(len(dates),len(forecasts[0]))
+                print(warn_string)
+                sys.quit()
+        else:
+            print('No forecasts found for {}'.format(state_name))
+            dates = []
 
         # Get base (inches) for each resort
         snowfall = []

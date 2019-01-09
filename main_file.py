@@ -6,6 +6,7 @@ import google_api
 
 today = dt.date.today().strftime('%Y-%m-%d')
 db_name = 'data/snowfall_'+today+'.db'
+numdays = 5
 
 def init_db():
     conn = sqlite3.connect(db_name)
@@ -43,6 +44,11 @@ def init_db():
             'day3TOT' FLOAT NOT NULL,
             'day4TOT' FLOAT NOT NULL,
             'day5TOT' FLOAT NOT NULL,
+            'date1' INTEGER NOT NULL,
+            'date2' INTEGER NOT NULL,
+            'date3' INTEGER NOT NULL,
+            'date4' INTEGER NOT NULL,
+            'date5' INTEGER NOT NULL,
             'TotalExpected' FLOAT NOT NULL,
             'Latitude' FLOAT NOT NULL,
             'Longitude' FLOAT NOT NULL
@@ -71,10 +77,11 @@ def insert_data():
             else:
                 base_depth = ''
 
-            print(value)
+            #print(value)
             dates = value['Dates']
+            date1, _, date2, _, date3, _, date4, _, date5, _ = dates[:numdays*2]
             forecast = value['Forecast']
-            day1D,day1N,day2D,day2N,day3D,day3N,day4D,day4N,day5D,day5N = forecast
+            day1D,day1N,day2D,day2N,day3D,day3N,day4D,day4N,day5D,day5N = forecast[:numdays*2]
             day1total = day1D+day1N
             day2total = day2D+day2N
             day3total = day3D+day3N
@@ -87,18 +94,26 @@ def insert_data():
             lat = google_loc_info[0]
             long = google_loc_info[1]
 
+            # Prep vars for database
             insertion = (None, name, state_name, url, icon, base_depth, day1D, day1N, day2D,
                          day2N, day3D, day3N, day4D, day4N, day5D, day5N, day1total,
-                         day2total, day3total, day4total, day5total, total, lat, long)
+                         day2total, day3total, day4total, day5total, date1, date2,
+                         date3, date4, date5, total, lat, long)
             statement = 'INSERT INTO "Mountain_Snow" '
-            statement += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+            statement += 'VALUES (' +','.join('?'*len(insertion))+')'
+
             cur.execute(statement, insertion)
-            # break # When testing, uncomment these breaks
+
+            print(state_name, 'data inserted')
+
+            ## uncomment these for testing
+            # sys.exit()
+            # break
         # break
-        print(state_name, 'data inserted')
 
     conn.commit()
     conn.close()
+    print('Done')
 
 if __name__ == "__main__":
     init_db()

@@ -395,7 +395,9 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.P('Developed by - ', style = {'display': 'inline'}),
-                        html.A('Adam Jones', href = 'http://www.adam-p-jones.com')
+                        html.A('Adam Jones', href = 'http://www.adam-p-jones.com'),
+                        html.Br(),
+                        html.A('Source', href = 'https://github.com/meccaLeccaHi/snow_scraper')
                     ], className = 'twelve columns',
                        style = {'fontSize': 16, 'padding-bottom': 30}
                 )
@@ -553,6 +555,7 @@ def update_forecast_bar(rows, selected_row_indices):
     else:
         temp_df = pd.DataFrame(rows).ix[selected_row_indices, :]
 
+    # Format title
     graph_title = '{}-Day Forecasted Snowfall'.format(numdays)
 
     # Convert string to timestamp object
