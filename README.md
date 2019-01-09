@@ -36,7 +36,7 @@ The front end was made using [Plotly Dash](https://dash.plot.ly/). I relied on s
 `$ pip install -r requirements.txt` (or see 'requirements' below)
 1. Scrape fresh snow data:  
 `$ python main_file.py`
-1. Visualize via app:  
+1. Run the app:  
 `$ python app.py`
 1. Enjoy!
 
